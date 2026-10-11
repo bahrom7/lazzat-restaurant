@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✊ Rock Paper Scissors</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);min-height:100vh;color:white;display:flex;align-items:center;justify-content:center;padding:16px;}
+.wrap{max-width:560px;width:100%;text-align:center;}
+h1{font-size:2.2em;font-weight:900;margin-bottom:4px;background:linear-gradient(135deg,#ff6b35,#f7931e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sub{color:#888;margin-bottom:20px;font-size:.9em;}
+
+/* SCREENS */
+.screen{display:none;}.screen.active{display:block;}
+
+/* CARDS */
+.card{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:22px;margin-bottom:14px;text-align:left;}
+.card h3{color:#f7931e;margin-bottom:12px;font-size:1em;text-align:center;}
+
+/* INPUTS */
+input[type=text],
+input[type=email],
+input[type=tel],
+input[type=password]{
+  width:100%;padding:12px 16px;border-radius:12px;
+  border:2px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.08);color:white;
+  font-size:1em;outline:none;margin-bottom:10px;
+  font-family:'Segoe UI',sans-serif;
+  box-sizing:border-box;
+  -webkit-appearance:none;
+  appearance:none;
+}
+input::placeholder{color:#555;}
+input:focus{border-color:#ff6b35;background:rgba(255,255,255,.12);}
+
+/* BUTTONS */
+.btn{width:100%;padding:13px;border:none;border-radius:14px;font-size:1em;font-weight:700;cursor:pointer;transition:all .2s;margin-bottom:8px;}
+.btn-orange{background:linear-gradient(135deg,#ff6b35,#f7931e);color:white;}
+.btn-orange:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(255,107,53,.4);}
+.btn-gray{background:rgba(255,255,255,.1);color:#ccc;}
+.btn-gray:hover{background:rgba(255,255,255,.18);}
+.btn-sm{padding:8px 18px;border:none;border-radius:20px;font-size:.85em;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-green{background:#22c55e;color:white;}
+.btn-green:hover{background:#16a34a;}
+.btn-red{background:rgba(255,80,80,.2);border:1px solid #f87171;color:#f87171;padding:8px 18px;border-radius:20px;font-size:.85em;font-weight:600;cursor:pointer;}
+.btn-red:hover{background:rgba(255,80,80,.35);}
+
+/* MODE CARDS */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.mode-card{background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.1);border-radius:18px;padding:22px 14px;cursor:pointer;transition:all .25s;text-align:center;}
+.mode-card:hover{border-color:#ff6b35;background:rgba(255,107,53,.1);transform:translateY(-4px);}
+.mode-icon{font-size:2.6em;margin-bottom:8px;}
+.mode-title{font-weight:800;font-size:1em;margin-bottom:4px;}
+.mode-desc{font-size:.76em;color:#aaa;}
+
+/* ID BOX */
+.id-box{background:rgba(255,107,53,.1);border:1px solid #ff6b35;border-radius:12px;padding:12px 16px;margin-bottom:12px;text-align:center;}
+.id-box .lbl{font-size:.78em;color:#aaa;margin-bottom:4px;}
+.id-box strong{color:#ff6b35;font-size:1.8em;letter-spacing:5px;display:block;}
+
+/* SPINNER */
+.spinner{width:42px;height:42px;border-radius:50%;border:4px solid rgba(255,255,255,.08);border-top-color:#ff6b35;animation:spin 1s linear infinite;margin:14px auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* SCOREBOARD */
+.scoreboard{display:flex;justify-content:center;gap:12px;margin-bottom:14px;}
+.sbox{background:rgba(255,255,255,.08);border-radius:14px;padding:10px 18px;min-width:85px;text-align:center;}
+.sbox .sl{font-size:.7em;color:#aaa;margin-bottom:2px;}
+.sbox .sn{font-size:2em;font-weight:900;}
+.sbox.you .sn{color:#4ade80;}.sbox.opp .sn{color:#f87171;}.sbox.drw .sn{color:#facc15;}
+
+/* HAND / OBJECT DISPLAY */
+.hand-wrap{
+  width:90px; height:90px;
+  display:inline-flex; align-items:center; justify-content:center;
+  border-radius:20px;
+  background:rgba(255,255,255,.08);
+  border:3px solid rgba(255,255,255,.15);
+  font-size:3.2em;
+  filter:drop-shadow(0 6px 16px rgba(0,0,0,.5));
+  transition:all .3s;
+}
+.hand-you{ transform:scaleX(-1); }
+
+/* Tosh (rock) */
+.obj-rock::before   { content:'🪨'; font-size:1em; }
+/* Qog'oz (paper) */
+.obj-paper::before  { content:'📄'; font-size:1em; }
+/* Qaychi (scissors) */
+.obj-scissors::before{ content:'✂️'; font-size:1em; }
+/* Tayyor emas */
+.obj-ready::before  { content:'❓'; font-size:1em; }
+/* Tanlayapti */
+.obj-thinking::before{ content:'🤔'; font-size:.9em; }
+/* ARENA */
+.arena{display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:14px;min-height:140px;}
+.pside{text-align:center;flex:1;}
+.pname{font-size:.8em;color:#aaa;margin-bottom:8px;font-weight:600;}
+
+/* Shake animatsiyasi */
+@keyframes shakeYou{
+  0%  {transform:scaleX(-1) translateY(0);}
+  25% {transform:scaleX(-1) translateY(-16px);}
+  50% {transform:scaleX(-1) translateY(0);}
+  75% {transform:scaleX(-1) translateY(-8px);}
+  100%{transform:scaleX(-1) translateY(0);}
+}
+@keyframes shakeOpp{
+  0%  {transform:translateY(0);}
+  25% {transform:translateY(-16px);}
+  50% {transform:translateY(0);}
+  75% {transform:translateY(-8px);}
+  100%{transform:translateY(0);}
+}
+.anim-you{ animation:shakeYou .5s ease; }
+.anim-opp{ animation:shakeOpp .5s ease; }
+
+/* Yutganda yashil, yutqizganda qizil */
+@keyframes gW{0%,100%{box-shadow:0 6px 16px rgba(0,0,0,.5)}50%{box-shadow:0 0 30px #4ade80,0 0 60px rgba(74,222,128,.3)}}
+@keyframes gL{0%,100%{box-shadow:0 6px 16px rgba(0,0,0,.5)}50%{box-shadow:0 0 30px #f87171,0 0 60px rgba(248,113,113,.3)}}
+.glow-win{animation:gW .6s ease; border-color:#4ade80 !important;}
+.glow-lose{animation:gL .6s ease; border-color:#f87171 !important;}
+
+/* FON animatsiyasi */
+.bg-items{
+  position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0;
+}
+.bg-item{
+  position:absolute; font-size:3em; opacity:0.06;
+  animation:floatItem linear infinite;
+  user-select:none;
+}
+@keyframes floatItem{
+  0%   { transform:translateY(110vh) rotate(0deg); opacity:0; }
+  10%  { opacity:0.06; }
+  90%  { opacity:0.06; }
+  100% { transform:translateY(-10vh) rotate(360deg); opacity:0; }
+}
+.wrap{ position:relative; z-index:1; }
+.vs-badge{font-size:1em;font-weight:900;color:#ff6b35;background:rgba(255,107,53,.15);border:2px solid #ff6b35;border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+.result-txt{font-size:1.5em;font-weight:900;min-height:38px;margin-bottom:6px;}
+.result-txt.win{color:#4ade80;animation:bA .4s ease;}.result-txt.lose{color:#f87171;animation:sA .4s ease;}.result-txt.draw{color:#facc15;}
+@keyframes bA{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+@keyframes sA{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.wait-opp{color:#facc15;font-size:.83em;min-height:20px;margin-bottom:4px;}
+.streak{color:#ff6b35;font-size:.83em;min-height:18px;margin-bottom:4px;}
+
+/* CHOICES */
+.choices{display:flex;justify-content:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.cbtn{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.12);border-radius:16px;padding:12px 18px;font-size:2em;cursor:pointer;transition:all .2s;}
+.cbtn:hover{background:rgba(255,107,53,.2);border-color:#ff6b35;transform:translateY(-5px) scale(1.08);}
+.cbtn:disabled{opacity:.35;cursor:not-allowed;transform:none !important;}
+.cbtn.selected{border-color:#ff6b35;background:rgba(255,107,53,.25);}
+.cbtn .clbl{display:block;font-size:.27em;color:#aaa;margin-top:3px;font-family:'Segoe UI',sans-serif;}
+
+/* HISTORY */
+.history{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin-top:6px;min-height:26px;}
+.hi{font-size:1.1em;animation:pI .3s ease;}
+@keyframes pI{0%{transform:scale(0);opacity:0}70%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+
+.btns-row{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap;}
+.status-bar{font-size:.78em;color:#aaa;margin-bottom:8px;min-height:18px;}
+
+/* RULES */
+.rules-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;}
+.rule-item{background:rgba(255,255,255,.05);border-radius:12px;padding:12px 8px;text-align:center;}
+.rule-emoji{font-size:2em;margin-bottom:5px;}
+.rule-text{font-size:.75em;color:#aaa;line-height:1.4;}
+.rule-win{color:#4ade80;font-weight:700;font-size:.8em;margin-top:4px;}
+
+/* FRIENDS */
+.friends-list{max-height:220px;overflow-y:auto;}
+.friend-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:rgba(255,255,255,.05);border-radius:10px;margin-bottom:6px;}
+.friend-name{font-weight:600;font-size:.9em;}
+.friend-code{font-size:.75em;color:#888;letter-spacing:2px;}
+.online-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4ade80;margin-right:4px;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.search-row{display:flex;gap:8px;margin-bottom:10px;}
+.search-row input{flex:1;margin-bottom:0;}
+
+/* AVATAR */
+.avatar{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#ff6b35,#f7931e);display:flex;align-items:center;justify-content:center;font-size:1.4em;font-weight:900;margin:0 auto 8px;}
+
+/* TAB */
+.tabs{display:flex;gap:6px;margin-bottom:14px;}
+.tab{flex:1;padding:9px;border:none;border-radius:10px;background:rgba(255,255,255,.07);color:#aaa;font-size:.85em;font-weight:600;cursor:pointer;transition:all .2s;}
+.tab.active{background:#ff6b35;color:white;}
+
+.back-home{display:inline-block;color:#666;text-decoration:none;font-size:.82em;margin-bottom:12px;}
+.back-home:hover{color:#ff6b35;}
+
+/* AUTH EKRANI */
+.auth-logo-big{font-size:3em;margin-bottom:6px;display:block;}
+.auth-title{font-size:1.6em;font-weight:900;margin-bottom:4px;
+  background:linear-gradient(135deg,#ff6b35,#f7931e);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.auth-subtitle{font-size:.88em;color:#888;margin-bottom:20px;}
+
+.auth-tabs-wrap{display:flex;gap:4px;background:rgba(255,255,255,.06);
+  border-radius:14px;padding:4px;margin-bottom:20px;}
+.auth-tab-btn{flex:1;padding:11px;border:none;border-radius:10px;
+  background:transparent;color:#888;font-size:.95em;font-weight:700;
+  cursor:pointer;transition:all .2s;}
+.auth-tab-btn.active{background:linear-gradient(135deg,#ff6b35,#f7931e);color:white;
+  box-shadow:0 4px 15px rgba(255,107,53,.4);}
+
+.auth-field{margin-bottom:14px;text-align:left;}
+.auth-field label{display:block;font-size:.82em;font-weight:700;
+  color:#aaa;margin-bottom:6px;letter-spacing:.5px;}
+.auth-field-icon{position:relative;}
+.auth-field-icon span{position:absolute;left:14px;top:50%;
+  transform:translateY(-50%);font-size:1.1em;pointer-events:none;}
+.auth-field-icon input{padding-left:42px !important;}
+
+.auth-btn{width:100%;padding:14px;border:none;border-radius:14px;
+  font-size:1em;font-weight:700;cursor:pointer;transition:all .2s;
+  background:linear-gradient(135deg,#ff6b35,#f7931e);color:white;
+  margin-top:4px;letter-spacing:.5px;}
+.auth-btn:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(255,107,53,.4);}
+.auth-btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;}
+
+.auth-divider{display:flex;align-items:center;gap:12px;
+  color:#444;font-size:.8em;margin:14px 0;}
+.auth-divider::before,.auth-divider::after{
+  content:'';flex:1;height:1px;background:rgba(255,255,255,.08);}
+
+.auth-saved{background:rgba(255,107,53,.08);
+  border:1px solid rgba(255,107,53,.25);border-radius:16px;
+  padding:16px;text-align:center;margin-top:12px;}
+.auth-saved .saved-label{font-size:.78em;color:#888;margin-bottom:4px;}
+.auth-saved .saved-name{font-size:1.3em;font-weight:900;color:#ff6b35;margin-bottom:2px;}
+.auth-saved .saved-email{font-size:.78em;color:#666;margin-bottom:12px;}
+
+/* OTP BOXES yangi */
+.otp-wrap{display:flex;gap:10px;justify-content:center;margin:16px 0;}
+.otp-box{
+  width:46px;height:56px;text-align:center;font-size:1.6em;font-weight:900;
+  background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.15);
+  border-radius:14px;color:white;outline:none;transition:all .2s;
+  margin-bottom:0;padding:0;
+}
+.otp-box:focus{border-color:#ff6b35;background:rgba(255,107,53,.12);}
+.otp-sent-info{background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.2);
+  border-radius:10px;padding:10px 14px;font-size:.82em;color:#4ade80;
+  text-align:center;margin-bottom:12px;}
+.timer-txt{text-align:center;font-size:.82em;color:#666;margin-top:8px;}
+.timer-txt span{color:#ff6b35;font-weight:700;}
+</style>
+</head>
+<body>
+<!-- FON ANIMATSIYASI -->
+<div class="bg-items" id="bgItems"></div>
+
+<div class="wrap">
+<a href="/" class="back-home" style="display:none;"></a>
+
+<!-- ══ 0: LOGIN / RO'YXATDAN O'TISH ══ -->
+<div class="screen active" id="sName">
+
+  <span class="auth-logo-big">✊🖐️✌️</span>
+  <div class="auth-title">Rock Paper Scissors</div>
+  <div class="auth-subtitle">Kirish yoki yangi akkaunt ochish</div>
+
+  <!-- Tabs -->
+  <div class="auth-tabs-wrap">
+    <button class="auth-tab-btn active" id="tabLoginBtn"  onclick="switchAuthTab('login')">🔐 Kirish</button>
+    <button class="auth-tab-btn"        id="tabRegBtn"    onclick="switchAuthTab('register')">✨ Ro'yxat</button>
+    <button class="auth-tab-btn"        id="tabRatingBtn" onclick="switchAuthTab('rating')">🏆 Rating</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="authLogin">
+    <div class="card" style="padding:24px;">
+      <div class="auth-field">
+        <label>ISM</label>
+        <div class="auth-field-icon">
+          <span>👤</span>
+          <input type="text" id="loginName" placeholder="Ismingiz..." autocomplete="off"
+            onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+        </div>
+      </div>
+      <div class="auth-field">
+        <label>PAROL</label>
+        <div class="auth-field-icon" style="position:relative;">
+          <span>🔒</span>
+          <input type="password" id="loginPass" placeholder="Parolingiz..." autocomplete="off"
+            onkeydown="if(event.key==='Enter')doLogin()">
+          <button onclick="togglePw('loginPass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1em;color:#888;">👁️</button>
+        </div>
+      </div>
+      <button class="auth-btn" onclick="doLogin()">🔐 Kirish</button>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="authRegister" style="display:none;">
+    <div class="card" style="padding:24px;">
+      <div class="auth-field">
+        <label>ISM (noyob)</label>
+        <div class="auth-field-icon">
+          <span>👤</span>
+          <input type="text" id="regName" placeholder="Ismingiz..." maxlength="16" autocomplete="off"
+            onkeydown="if(event.key==='Enter')document.getElementById('regPass').focus()">
+        </div>
+      </div>
+      <div class="auth-field">
+        <label>PAROL</label>
+        <div class="auth-field-icon" style="position:relative;">
+          <span>🔒</span>
+          <input type="password" id="regPass" placeholder="Kamida 6 ta belgi..." autocomplete="off"
+            oninput="checkStrength(this.value)"
+            onkeydown="if(event.key==='Enter')document.getElementById('regPass2').focus()">
+          <button onclick="togglePw('regPass',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1em;color:#888;">👁️</button>
+        </div>
+        <div id="strengthBar" style="height:5px;border-radius:4px;margin-top:6px;width:0;transition:all .3s;"></div>
+        <div id="strengthText" style="font-size:.75em;margin-top:4px;height:16px;"></div>
+      </div>
+      <div class="auth-field">
+        <label>PAROLNI TASDIQLANG</label>
+        <div class="auth-field-icon" style="position:relative;">
+          <span>🔒</span>
+          <input type="password" id="regPass2" placeholder="Parolni qaytaring..." autocomplete="off"
+            onkeydown="if(event.key==='Enter')doRegister()">
+          <button onclick="togglePw('regPass2',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:1em;color:#888;">👁️</button>
+        </div>
+      </div>
+      <button class="auth-btn" onclick="doRegister()">✨ Akkaunt yaratish</button>
+    </div>
+  </div>
+
+  <!-- RATING -->
+  <div id="authRating" style="display:none;">
+    <div class="card" style="padding:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <b style="color:#f7931e;">🏆 Top o'yinchilar</b>
+        <button onclick="loadRating()" style="background:none;border:none;color:#888;cursor:pointer;font-size:1.1em;">🔄</button>
+      </div>
+      <div id="ratingList">
+        <div style="text-align:center;color:#555;padding:20px;">Yuklanmoqda...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Xabar -->
+  <div id="authMsg" style="display:none;padding:12px 16px;border-radius:12px;text-align:center;font-size:.88em;margin-top:10px;"></div>
+
+  <!-- Saqlangan akkaunt -->
+  <div id="prevNameBox" style="display:none;" class="auth-saved">
+    <div class="saved-label">Saqlangan akkaunt:</div>
+    <div class="saved-name" id="prevNameText"></div>
+    <button class="auth-btn" onclick="usePrevName()" style="margin-top:10px;">✅ Shu akkaunt bilan kir</button>
+    <button class="btn btn-gray" onclick="newPlayer()" style="margin-top:8px;">👤 Boshqa akkaunt</button>
+  </div>
+
+</div>
+
+<!-- ══ 1: BOSH MENU ══ -->
+<div class="screen" id="sHome">
+  <div style="margin-bottom:16px;">
+    <div class="avatar" id="homeAvatar">?</div>
+    <div style="font-weight:800;font-size:1.1em;" id="homeName">O'yinchi</div>
+    <div style="font-size:.8em;color:#888;margin-top:2px;">Kod: <span id="homeCode" style="color:#ff6b35;letter-spacing:2px;"></span></div>
+    <button onclick="rpsLogout()" style="margin-top:8px;background:none;border:1px solid rgba(248,113,113,.4);color:#f87171;padding:5px 14px;border-radius:20px;font-size:.78em;cursor:pointer;">🚪 Chiqish</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('tabPlay')">🎮 O'ynash</button>
+    <button class="tab" onclick="switchTab('tabRules')">📖 Qoidalar</button>
+    <button class="tab" onclick="switchTab('tabFriends')">👥 Do'stlar</button>
+    <button class="tab" onclick="switchTab('tabRatingHome')">🏆 Rating</button>
+    <button class="tab" onclick="switchTab('tabChat')">💬 Chat</button>
+  </div>
+
+  <!-- TAB: O'YNASH -->
+  <div id="tabPlay">
+    <div class="mode-grid">
+      <div class="mode-card" onclick="showCpuMode()">
+        <div class="mode-icon">🤖</div>
+        <div class="mode-title">vs CPU</div>
+        <div class="mode-desc">Kompyuterga qarshi</div>
+      </div>
+      <div class="mode-card" onclick="switchTab('tabOnline')">
+        <div class="mode-icon">👥</div>
+        <div class="mode-title">Do'st bilan</div>
+        <div class="mode-desc">Online o'ynash</div>
+      </div>
+    </div>
+
+    <!-- CPU Mode tanlash -->
+    <div id="cpuModeBox" style="display:none;">
+      <div class="card" style="padding:20px;text-align:center;">
+        <h3 style="color:#f7931e;margin-bottom:16px;">🤖 O'yin rejimi</h3>
+        <div class="mode-grid">
+          <div class="mode-card" onclick="startCPU(3)" style="padding:18px 10px;">
+            <div class="mode-icon">3️⃣</div>
+            <div class="mode-title">3 Raund</div>
+            <div class="mode-desc">3 ta raund, eng ko'p yutgan g'alaba</div>
+          </div>
+          <div class="mode-card" onclick="startCPU(5)" style="padding:18px 10px;">
+            <div class="mode-icon">5️⃣</div>
+            <div class="mode-title">5 Raund</div>
+            <div class="mode-desc">5 ta raund, eng ko'p yutgan g'alaba</div>
+          </div>
+          <div class="mode-card" onclick="startCPU(0)" style="padding:18px 10px;">
+            <div class="mode-icon">♾️</div>
+            <div class="mode-title">Practice</div>
+            <div class="mode-desc">Cheksiz o'ynash, to'xtashga qadar</div>
+          </div>
+        </div>
+        <button class="btn btn-gray" style="margin-top:10px;" onclick="document.getElementById('cpuModeBox').style.display='none'">← Orqaga</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: ONLINE -->
+  <div id="tabOnline" style="display:none;">
+    <div class="card">
+      <h3>🆔 Sizning kodingiz</h3>
+      <div class="id-box">
+        <div class="lbl">Do'stingizga yuboring:</div>
+        <strong id="myCode">----</strong>
+      </div>
+      <button class="btn btn-gray" onclick="copyCode()">📋 Nusxa olish</button>
+    </div>
+    <div style="color:#555;margin:6px 0;font-size:.82em;text-align:center;">— YOKI DO'ST KODINI KIRITING —</div>
+    <div class="card">
+      <h3>🔗 Do'st kodi</h3>
+      <input type="text" id="friendCode" placeholder="XXXXXX" maxlength="6"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
+        onkeydown="if(event.key==='Enter')joinRoom()">
+      <button class="btn btn-orange" onclick="joinRoom()">🚀 Ulanish</button>
+    </div>
+    <button class="btn btn-gray" onclick="switchTab('tabPlay')">← Orqaga</button>
+  </div>
+
+  <!-- TAB: QOIDALAR -->
+  <div id="tabRules" style="display:none;">
+    <div class="card">
+      <h3>📖 O'yin qoidalari</h3>
+      <div class="rules-grid">
+        <div class="rule-item">
+          <div class="rule-emoji">✊</div>
+          <div class="rule-text">Rock (Tosh)</div>
+          <div class="rule-win">✂️ ni yutadi</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-emoji">🖐️</div>
+          <div class="rule-text">Paper (Qog'oz)</div>
+          <div class="rule-win">✊ ni yutadi</div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-emoji">✌️</div>
+          <div class="rule-text">Scissors (Qaychi)</div>
+          <div class="rule-win">🖐️ ni yutadi</div>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:14px;font-size:.85em;color:#aaa;line-height:1.7;">
+        🎮 <b style="color:white;">Qanday o'ynaladi:</b><br>
+        1. CPU yoki Do'st rejimini tanlang<br>
+        2. ✊ Rock, 🖐️ Paper yoki ✌️ Scissors bosing<br>
+        3. Natijani ko'ring — 3 yutish ketma-ket = 🔥 Streak!<br><br>
+        ⌨️ <b style="color:white;">Klaviatura:</b><br>
+        <b style="color:#ff6b35;">R</b> = Rock &nbsp; <b style="color:#ff6b35;">P</b> = Paper &nbsp; <b style="color:#ff6b35;">S</b> = Scissors
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: DO'STLAR -->
+  <div id="tabFriends" style="display:none;">
+    <div class="card">
+      <h3>👥 Do'stlar ro'yxati</h3>
+      <div class="search-row">
+        <input type="text" id="friendSearch" placeholder="Ism yoki kod bilan qidirish..."
+          oninput="searchFriends()">
+      </div>
+      <div class="friends-list" id="friendsList">
+        <!-- JS bilan to'ldiriladi -->
+      </div>
+      <div id="noFriends" style="text-align:center;color:#555;padding:20px;font-size:.85em;">
+        Hozircha do'stlar yo'q.<br>Kod almashib do'st qo'shing!
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>➕ Do'st qo'shish (kod orqali)</h3>
+      <input type="text" id="addFriendCode" placeholder="Do'st kodi (XXXXXX)" maxlength="6"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+      <input type="text" id="addFriendName" placeholder="Do'st ismi">
+      <button class="btn btn-orange" onclick="addFriend()">➕ Qo'shish</button>
+    </div>
+  </div>
+
+  <!-- TAB: RATING (bosh menyu ichida) -->
+  <div id="tabRatingHome" style="display:none;">
+    <div class="card" style="padding:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <b style="color:#f7931e;">🏆 Top o'yinchilar</b>
+        <button onclick="loadRatingHome()" style="background:none;border:none;color:#888;cursor:pointer;font-size:1.1em;">🔄</button>
+      </div>
+      <div id="ratingListHome">
+        <div style="text-align:center;color:#555;padding:20px;">Yuklanmoqda...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: CHAT -->
+  <div id="tabChat" style="display:none;">
+    <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:20px;overflow:hidden;">
+      <!-- Chat header -->
+      <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-weight:700;color:#f7931e;">💬 Global Chat</span>
+        <span style="font-size:.75em;color:#555;" id="chatOnline"></span>
+      </div>
+      <!-- Xabarlar -->
+      <div id="chatMessages" style="height:280px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;">
+        <div style="text-align:center;color:#444;font-size:.82em;">Xabarlar yuklanmoqda...</div>
+      </div>
+      <!-- Input -->
+      <div style="padding:12px;border-top:1px solid rgba(255,255,255,.08);display:flex;gap:8px;">
+        <input type="text" id="chatInput" placeholder="Xabar yozing..."
+          maxlength="200" autocomplete="off"
+          style="flex:1;margin-bottom:0;"
+          onkeydown="if(event.key==='Enter')sendChat()">
+        <button onclick="sendChat()" style="background:linear-gradient(135deg,#ff6b35,#f7931e);border:none;color:white;padding:10px 18px;border-radius:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
+          ➤
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 2: KUTISH ══ -->
+<div class="screen" id="sWait">
+  <div class="card" style="text-align:center;">
+    <h3>⏳ Do'st kutilmoqda...</h3>
+    <div class="spinner"></div>
+    <div class="id-box">
+      <div class="lbl">Sizning kodingiz:</div>
+      <strong id="myCodeWait">----</strong>
+    </div>
+    <p style="color:#aaa;font-size:.82em;margin-bottom:14px;">Do'stingiz shu kodni kiriting</p>
+    <button class="btn btn-gray" onclick="cancelWait()">❌ Bekor qilish</button>
+  </div>
+</div>
+
+<!-- ══ 3: O'YIN ══ -->
+<div class="screen" id="sGame">
+  <div class="status-bar" id="statusBar"></div>
+  <!-- Raund ko'rsatgich -->
+  <div id="roundBar" style="display:none;text-align:center;margin-bottom:10px;font-size:.85em;color:#aaa;">
+    Raund <span id="roundCurrent" style="color:#ff6b35;font-weight:900;">1</span>
+    / <span id="roundTotal">3</span>
+    &nbsp;|&nbsp; 🏆 <span id="roundScore" style="color:#f7931e;font-weight:700;">0–0</span>
+  </div>
+  <div class="scoreboard">
+    <div class="sbox you"><div class="sl" id="myNameLabel">SIZ</div><div class="sn" id="sYou">0</div></div>
+    <div class="sbox drw"><div class="sl">DRAW</div><div class="sn" id="sDraw">0</div></div>
+    <div class="sbox opp"><div class="sl" id="oppNameLabel">OPP</div><div class="sn" id="sOpp">0</div></div>
+  </div>
+  <div class="arena">
+    <div class="pside">
+      <div class="pname" id="myNameArena">SIZ</div>
+      <div class="hand-wrap hand-you obj-ready" id="myHand"></div>
+    </div>
+    <div class="vs-badge">VS</div>
+    <div class="pside">
+      <div class="pname" id="oppNameArena">CPU</div>
+      <div class="hand-wrap obj-ready" id="oppHand"></div>
+    </div>
+  </div>
+  <div class="streak" id="streak"></div>
+  <div class="result-txt" id="resTxt">Tanlang!</div>
+  <div class="wait-opp" id="waitOpp"></div>
+  <div class="choices">
+    <button class="cbtn" id="bRock"     onclick="choose('rock')">🪨<span class="clbl">TOSH</span></button>
+    <button class="cbtn" id="bPaper"    onclick="choose('paper')">📄<span class="clbl">QOG'OZ</span></button>
+    <button class="cbtn" id="bScissors" onclick="choose('scissors')">✂️<span class="clbl">QAYCHI</span></button>
+  </div>
+  <div class="history" id="hist"></div>
+  <div class="btns-row">
+    <button class="btn-sm btn-green" onclick="resetScore()">🔄 Reset</button>
+    <button class="btn-red" onclick="leaveGame()">🚪 Chiqish</button>
+  </div>
+</div>
+
+</div><!-- wrap -->
+
+<script>
+// ── AUDIO ────────────────────────────────────────────────────
+const AC=new(window.AudioContext||window.webkitAudioContext)();
+function beep(f,d,t='sine',v=0.3){try{const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,AC.currentTime);g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+d);o.start();o.stop(AC.currentTime+d);}catch(e){}}
+function sWin(){beep(523,.1);setTimeout(()=>beep(659,.1),120);setTimeout(()=>beep(784,.25),250);}
+function sLose(){beep(280,.12,'sawtooth');setTimeout(()=>beep(200,.3,'sawtooth'),140);}
+function sDrw(){beep(440,.2,'triangle');}
+function sClick(){beep(700,.07,'square',0.12);}
+function rAudio(){if(AC.state==='suspended')AC.resume();}
+
+// ── OBYEKTLAR ────────────────────────────────────────────────
+// Har tanlov uchun CSS class va emoji
+const OBJ = {
+  rock:     { cls:'obj-rock',     label:'Tosh' },
+  paper:    { cls:'obj-paper',    label:"Qog'oz" },
+  scissors: { cls:'obj-scissors', label:'Qaychi' },
+};
+
+function setHand(el, choice){
+  // Barcha obj- classlarini olib tashlash
+  el.className = el.className.replace(/obj-\w+/g, '').trim();
+  if(choice && OBJ[choice]){
+    el.classList.add(OBJ[choice].cls);
+  } else {
+    el.classList.add('obj-ready');
+  }
+}
+
+// ── FON ANIMATSIYASI ──────────────────────────────────────────
+(function(){
+  const items = ['\u{1FAA8}','\uD83D\uDCC4','\u2702\uFE0F','\u{1FAA8}','\uD83D\uDCC4','\u2702\uFE0F',
+                 '\u{1FAA8}','\uD83D\uDCC4','\u2702\uFE0F','\u{1FAA8}','\uD83D\uDCC4','\u2702\uFE0F'];
+  const bg = document.getElementById('bgItems');
+  if(!bg) return;
+  items.forEach(function(item){
+    const el = document.createElement('div');
+    el.className = 'bg-item';
+    el.textContent = item;
+    el.style.left = (Math.random()*100)+'%';
+    el.style.fontSize = (2+Math.random()*3)+'em';
+    el.style.animationDuration = (8+Math.random()*12)+'s';
+    el.style.animationDelay = (Math.random()*10)+'s';
+    bg.appendChild(el);
+  });
+})();
+
+// ── STATE ────────────────────────────────────────────────────
+let myName='', myCode='';
+let mode=null, myC=null, oppC=null, oppName='CPU';
+let score={you:0,opp:0,draw:0}, hist=[], streak=0, busy=false;
+let pollTimer=null, roomId='';
+let friends=[];
+
+// ── SCREENS ──────────────────────────────────────────────────
+function showS(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+
+// ── TAB ──────────────────────────────────────────────────────
+function switchTab(id){
+  ['tabPlay','tabOnline','tabRules','tabFriends','tabRatingHome','tabChat'].forEach(t=>{
+    const el=document.getElementById(t);
+    if(el) el.style.display='none';
+  });
+  // CPU mode box ham yashirish
+  const cb = document.getElementById('cpuModeBox');
+  if(cb) cb.style.display='none';
+
+  const tabs=document.querySelectorAll('#sHome .tab');
+  tabs.forEach((t,i)=>{
+    t.classList.remove('active');
+    const ids=['tabPlay','tabRules','tabFriends','tabRatingHome','tabChat'];
+    if(ids[i]===id) t.classList.add('active');
+  });
+  const el=document.getElementById(id);
+  if(el) el.style.display='block';
+  if(id==='tabFriends') renderFriends();
+  if(id==='tabRatingHome') loadRatingHome();
+  if(id==='tabChat'){ loadChat('global'); startChatPolling(); }
+  else stopChatPolling();
+}
+
+// ── AUTH ─────────────────────────────────────────────────────
+let authMode = 'login';
+let authEmail = '';      // eski OTP uchun (bo'sh qoladi)
+let authTimerInt = null; // eski OTP uchun (bo'sh qoladi)
+
+function switchAuthTab(mode){
+  authMode = mode;
+  ['authLogin','authRegister','authRating'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.style.display = 'none';
+  });
+  const map = {login:'authLogin', register:'authRegister', rating:'authRating'};
+  const show = document.getElementById(map[mode]);
+  if(show) show.style.display = 'block';
+
+  ['tabLoginBtn','tabRegBtn','tabRatingBtn'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  const btnMap = {login:'tabLoginBtn', register:'tabRegBtn', rating:'tabRatingBtn'};
+  const btn = document.getElementById(btnMap[mode]);
+  if(btn) btn.classList.add('active');
+
+  hideAuthMsg();
+  if(mode === 'rating') loadRating();
+}
+
+function showAuthMsg(msg, isErr){
+  const el = document.getElementById('authMsg');
+  el.textContent = msg; el.style.display = 'block';
+  el.style.background = isErr ? 'rgba(248,113,113,.15)' : 'rgba(74,222,128,.15)';
+  el.style.color  = isErr ? '#f87171' : '#4ade80';
+  el.style.border = isErr ? '1px solid #f87171' : '1px solid #4ade80';
+}
+function hideAuthMsg(){ document.getElementById('authMsg').style.display='none'; }
+
+function togglePw(id, btn){
+  const el = document.getElementById(id);
+  if(el.type==='password'){ el.type='text'; btn.textContent='🙈'; }
+  else{ el.type='password'; btn.textContent='👁️'; }
+}
+
+function checkStrength(val){
+  const bar = document.getElementById('strengthBar');
+  const txt = document.getElementById('strengthText');
+  if(!val){ bar.style.width='0'; txt.textContent=''; return; }
+  let s = 0;
+  if(val.length >= 6)  s++;
+  if(val.length >= 10) s++;
+  if(/[A-Z]/.test(val)) s++;
+  if(/[0-9]/.test(val)) s++;
+  if(/[^a-zA-Z0-9]/.test(val)) s++;
+  const levels = [
+    {w:'20%', c:'#ef4444', t:'Juda zaif'},
+    {w:'40%', c:'#f97316', t:'Zaif'},
+    {w:'60%', c:'#eab308', t:"O'rtacha"},
+    {w:'80%', c:'#22c55e', t:'Yaxshi'},
+    {w:'100%',c:'#16a34a', t:'Kuchli 💪'},
+  ];
+  const l = levels[Math.max(0, Math.min(s-1, 4))];
+  bar.style.cssText = `height:5px;border-radius:4px;margin-top:6px;width:${l.w};background:${l.c};transition:all .3s;`;
+  txt.style.color = l.c;
+  txt.textContent = l.t;
+}
+
+async function doRegister(){
+  const name  = document.getElementById('regName').value.trim();
+  const pass  = document.getElementById('regPass').value;
+  const pass2 = document.getElementById('regPass2').value;
+  if(!name){ showAuthMsg('Ismingizni kiriting!', true); return; }
+  if(pass.length < 6){ showAuthMsg("Parol kamida 6 ta belgi bo'lsin!", true); return; }
+  if(pass !== pass2){ showAuthMsg('Parollar mos kelmadi!', true); return; }
+
+  try{
+    const r = await fetch('/api/rps/register/', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username: name, password: pass})
+    });
+    const d = await r.json();
+    if(d.status === 'ok'){
+      showAuthMsg('Akkaunt yaratildi! Xush kelibsiz!', false);
+      myName = d.username; myCode = d.game_code;
+      localStorage.setItem('rps_name',  myName);
+      localStorage.setItem('rps_code',  myCode);
+      sessionStorage.setItem('rps_token', d.token || '');
+      startHeartbeat();
+      broadcastLogin();
+      setTimeout(()=>{ loadFriends(); initHome(); showS('sHome'); }, 900);
+    } else {
+      showAuthMsg(d.message, true);
+    }
+  } catch(e){ showAuthMsg('Server bilan ulanishda xato!', true); }
+}
+
+async function doLogin(){
+  const name = document.getElementById('loginName').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  if(!name || !pass){ showAuthMsg('Ism va parolni kiriting!', true); return; }
+
+  const btn = document.querySelector('#authLogin .auth-btn');
+  if(btn){ btn.disabled=true; btn.textContent='⏳ Tekshirilmoqda...'; }
+
+  try{
+    // Faqat shu tab uchun token (sessionStorage — boshqa tabda yo'q)
+    const myTabToken = sessionStorage.getItem('rps_token') || '';
+
+    const r = await fetch('/api/rps/login/', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username: name, password: pass, token: myTabToken})
+    });
+    const d = await r.json();
+
+    if(d.status === 'ok'){
+      showAuthMsg(`Xush kelibsiz, ${d.username}!`, false);
+      myName = d.username; myCode = d.game_code;
+      // localStorage — ism va kod (ko'rsatish uchun)
+      localStorage.setItem('rps_name', myName);
+      localStorage.setItem('rps_code', myCode);
+      // sessionStorage — token faqat shu tabda!
+      sessionStorage.setItem('rps_token', d.token);
+      startHeartbeat();
+      broadcastLogin();
+      setTimeout(()=>{ loadFriends(); initHome(); showS('sHome'); }, 800);
+
+    } else if(d.status === 'busy'){
+      // Boshqa qurilmada faol
+      showAuthMsg(d.message, true);
+      // "Majburan kirish" tugmasi
+      const existing = document.getElementById('forceBtnWrap');
+      if(!existing){
+        const wrap = document.createElement('div');
+        wrap.id = 'forceBtnWrap';
+        wrap.style.cssText = 'margin-top:10px;';
+        wrap.innerHTML = `<button class="auth-btn" style="background:rgba(248,113,113,.3);border:1px solid #f87171;" onclick="forceLogin('${name}','${pass}')">🔓 Boshqa qurilmadan chiqarib kirish</button>`;
+        document.getElementById('authMsg').after(wrap);
+      }
+    } else {
+      showAuthMsg(d.message, true);
+    }
+  } catch(e){ showAuthMsg('Server bilan ulanishda xato!', true); }
+  if(btn){ btn.disabled=false; btn.textContent='🔐 Kirish'; }
+}
+
+async function forceLogin(name, pass){
+  // Majburan kirish — eski session o'chiriladi
+  const btn = document.getElementById('forceBtnWrap');
+  if(btn) btn.remove();
+
+  try{
+    const r = await fetch('/api/rps/login/', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({username: name, password: pass, token: 'FORCE'})
+    });
+    const d = await r.json();
+    if(d.status === 'ok'){
+      showAuthMsg(`Xush kelibsiz, ${d.username}!`, false);
+      myName = d.username; myCode = d.game_code;
+      localStorage.setItem('rps_name', myName);
+      localStorage.setItem('rps_code', myCode);
+      sessionStorage.setItem('rps_token', d.token);
+      startHeartbeat();
+      broadcastLogin();
+      setTimeout(()=>{ loadFriends(); initHome(); showS('sHome'); }, 800);
+    } else {
+      showAuthMsg(d.message, true);
+    }
+  } catch(e){ showAuthMsg('Xato. Qayta urining.', true); }
+}
+
+async function loadRating(){
+  const list = document.getElementById('ratingList');
+  if(list) await _fetchRating(list);
+}
+
+async function loadRatingHome(){
+  const list = document.getElementById('ratingListHome');
+  if(list) await _fetchRating(list);
+}
+
+async function _fetchRating(list){
+  list.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">Yuklanmoqda...</div>';
+  try{
+    const r = await fetch('/api/rps/rating/');
+    const d = await r.json();
+    if(!d.players || !d.players.length){
+      list.innerHTML = '<div style="text-align:center;color:#555;padding:20px;">Hali hech kim o\'ynamagan</div>';
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    list.innerHTML = d.players.map(p=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 8px;
+        border-bottom:1px solid rgba(255,255,255,.06);
+        ${p.rank<=3?'background:rgba(255,107,53,.06);border-radius:10px;margin-bottom:4px;':''}">
+        <div style="font-size:1.3em;min-width:32px;text-align:center;">
+          ${medals[p.rank-1] || p.rank}
+        </div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:.95em;">${p.username}</div>
+          <div style="font-size:.72em;color:#888;">
+            ${p.wins}W · ${p.losses}L · ${p.draws}D · ${p.winrate}% WR
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="color:#f7931e;font-weight:900;font-size:1.1em;">${p.score}</div>
+          <div style="font-size:.7em;color:#666;">ball</div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e){
+    list.innerHTML = '<div style="text-align:center;color:#f87171;padding:20px;">Xato yuz berdi</div>';
+  }
+}
+
+// ── CHAT ─────────────────────────────────────────────────────
+let chatPollTimer = null;
+let chatLastId    = 0;
+let chatRoom      = 'global';
+
+async function loadChat(room){
+  chatRoom   = room || 'global';
+  chatLastId = 0;
+  const box  = document.getElementById('chatMessages');
+  if(!box) return;
+  box.innerHTML = '';
+  await fetchChatMessages();
+  box.scrollTop = box.scrollHeight;
+}
+
+async function fetchChatMessages(){
+  try{
+    const r = await fetch(`/api/rps/chat/get/?room=${chatRoom}&after=${chatLastId}`);
+    const d = await r.json();
+    if(!d.messages || !d.messages.length) return;
+    const box = document.getElementById('chatMessages');
+    const atBottom = box.scrollHeight - box.clientHeight <= box.scrollTop + 40;
+    d.messages.forEach(m=>{
+      chatLastId = Math.max(chatLastId, m.id);
+      const isMe = m.username === myName;
+      const div  = document.createElement('div');
+      div.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};margin-bottom:4px;`;
+      div.innerHTML = `
+        <div style="max-width:80%;padding:8px 12px;border-radius:${isMe?'14px 14px 4px 14px':'14px 14px 14px 4px'};
+          background:${isMe?'linear-gradient(135deg,#ff6b35,#f7931e)':'rgba(255,255,255,.1)'};
+          color:white;font-size:.88em;word-break:break-word;line-height:1.4;">
+          ${!isMe?`<div style="font-size:.74em;color:#f7931e;font-weight:700;margin-bottom:3px;">${escHtml(m.username)}</div>`:''}
+          ${escHtml(m.text)}
+          <div style="font-size:.68em;opacity:.6;margin-top:4px;text-align:right;">${m.time}</div>
+        </div>`;
+      box.appendChild(div);
+    });
+    if(atBottom) box.scrollTop = box.scrollHeight;
+  }catch(e){}
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function sendChat(){
+  const inp  = document.getElementById('chatInput');
+  const text = inp ? inp.value.trim() : '';
+  if(!text || !myCode){ if(!myCode) showToast('Avval akkauntga kiring!'); return; }
+  const token = sessionStorage.getItem('rps_token') || '';
+  inp.value = '';
+  try{
+    const r = await fetch('/api/rps/chat/send/', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({game_code:myCode, token, text, room:chatRoom})
+    });
+    const d = await r.json();
+    if(d.status==='ok'){
+      await fetchChatMessages();
+    } else {
+      showToast('❌ '+d.message);
+      inp.value = text;
+    }
+  }catch(e){ showToast('Xato. Qayta urining.'); inp.value=text; }
+}
+
+function startChatPolling(){
+  stopChatPolling();
+  chatPollTimer = setInterval(fetchChatMessages, 2000);
+}
+function stopChatPolling(){
+  if(chatPollTimer){ clearInterval(chatPollTimer); chatPollTimer=null; }
+}
+
+function newPlayer(){
+  localStorage.removeItem('rps_code');
+  localStorage.removeItem('rps_token');
+  document.getElementById('prevNameBox').style.display = 'none';
+  switchAuthTab('login');
+}
+
+// ── HEARTBEAT (har 60 soniyada faollik yangilanadi) ───────────
+let heartbeatTimer = null;
+function startHeartbeat(){
+  if(heartbeatTimer) clearInterval(heartbeatTimer);
+  heartbeatTimer = setInterval(()=>{
+    const code  = localStorage.getItem('rps_code');
+    const token = sessionStorage.getItem('rps_token');
+    if(!code || !token) return;
+    fetch('/api/rps/heartbeat/', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({game_code: code, token})
+    }).catch(()=>{});
+  }, 60000);
+}
+
+// ── LOGOUT ───────────────────────────────────────────────────
+async function doRpsLogout(){
+  const code  = localStorage.getItem('rps_code');
+  const token = sessionStorage.getItem('rps_token');
+  if(code && token){
+    await fetch('/api/rps/logout/', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({game_code: code, token})
+    }).catch(()=>{});
+  }
+  if(heartbeatTimer) clearInterval(heartbeatTimer);
+  localStorage.removeItem('rps_name');
+  localStorage.removeItem('rps_code');
+  sessionStorage.removeItem('rps_token');
+  broadcastLogout();
+  myName=''; myCode='';
+  showS('sName');
+  switchAuthTab('login');
+}
+
+// Sahifa yopilganda logout
+window.addEventListener('beforeunload', ()=>{
+  const code  = localStorage.getItem('rps_code');
+  const token = sessionStorage.getItem('rps_token');
+  if(code && token){
+    navigator.sendBeacon('/api/rps/logout/',
+      JSON.stringify({game_code: code, token})
+    );
+  }
+});
+
+function updateAvatar(){ /* eski — ishlatilmaydi */ }
+
+function usePrevName(){
+  const n = localStorage.getItem('rps_name');
+  const c = localStorage.getItem('rps_code');
+  if(n && c){
+    myName=n; myCode=c;
+    // Avval boshqa tablarga xabar — ular chiqib ketsin
+    broadcastLogin();
+    // Keyin shu tab kirsin
+    startHeartbeat();
+    loadFriends(); initHome(); showS('sHome');
+  }
+}
+
+function saveName(){ /* eski — ishlatilmaydi */ }
+
+function initHome(){
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  set('homeAvatar',   myName[0].toUpperCase());
+  set('homeName',     myName);
+  set('homeCode',     myCode);
+  set('myCode',       myCode);
+  set('myCodeWait',   myCode);
+  set('myNameLabel',  myName);
+  set('myNameArena',  myName);
+}
+
+// ── DO'STLAR ──────────────────────────────────────────────────
+function loadFriends(){
+  const saved=localStorage.getItem('rps_friends');
+  friends=saved?JSON.parse(saved):[];
+}
+
+function saveFriendsLS(){
+  localStorage.setItem('rps_friends',JSON.stringify(friends));
+}
+
+function addFriend(){
+  const code=document.getElementById('addFriendCode').value.trim().toUpperCase();
+  const name=document.getElementById('addFriendName').value.trim();
+  if(!code||code.length<4){showToast('Kodni to\'liq kiriting!');return;}
+  if(!name){showToast('Do\'st ismini kiriting!');return;}
+  if(code===myCode){showToast('Bu sizning o\'z kodingiz!');return;}
+  if(friends.find(f=>f.code===code)){showToast('Bu do\'st allaqachon qo\'shilgan!');return;}
+  friends.push({name,code});
+  saveFriendsLS();
+  document.getElementById('addFriendCode').value='';
+  document.getElementById('addFriendName').value='';
+  renderFriends();
+  showToast(`✅ ${name} do'stlar ro'yxatiga qo'shildi!`);
+}
+
+function removeFriend(code){
+  friends=friends.filter(f=>f.code!==code);
+  saveFriendsLS();
+  renderFriends();
+}
+
+function renderFriends(filter=''){
+  const list=document.getElementById('friendsList');
+  const noFr=document.getElementById('noFriends');
+  const filtered=friends.filter(f=>
+    f.name.toLowerCase().includes(filter.toLowerCase())||
+    f.code.toLowerCase().includes(filter.toLowerCase())
+  );
+  if(!filtered.length){
+    list.innerHTML='';
+    noFr.style.display='block';
+    return;
+  }
+  noFr.style.display='none';
+  list.innerHTML=filtered.map(f=>`
+    <div class="friend-item">
+      <div>
+        <div class="friend-name">👤 ${f.name}</div>
+        <div class="friend-code">${f.code}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn-sm btn-green" onclick="inviteFriend('${f.code}')">🎮 O'yna</button>
+        <button onclick="removeFriend('${f.code}')" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:1.1em;">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function searchFriends(){
+  const q=document.getElementById('friendSearch').value;
+  renderFriends(q);
+}
+
+function inviteFriend(code){
+  document.getElementById('friendCode').value=code;
+  switchTab('tabOnline');
+  showToast('Do\'st kodi to\'ldirildi, Ulanish ni bosing!');
+}
+
+// ── COPY ─────────────────────────────────────────────────────
+function copyCode(){
+  navigator.clipboard.writeText(myCode)
+    .then(()=>showToast('Kod nusxa olindi: '+myCode))
+    .catch(()=>showToast('Kodingiz: '+myCode));
+}
+
+// ── TOAST ─────────────────────────────────────────────────────
+function showToast(msg){
+  let t=document.getElementById('_t');
+  if(!t){t=document.createElement('div');t.id='_t';t.style.cssText='position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#ff6b35;color:white;padding:11px 22px;border-radius:20px;font-weight:700;z-index:9999;transition:opacity .3s;max-width:90vw;text-align:center;';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',2500);
+}
+
+// ── CPU ───────────────────────────────────────────────────────
+let cpuMaxRounds = 0; // 0 = cheksiz
+
+function showCpuMode(){
+  document.getElementById('cpuModeBox').style.display = 'block';
+}
+
+function startCPU(rounds){
+  rAudio(); mode='cpu'; oppName='CPU';
+  cpuMaxRounds = rounds || 0;
+  document.getElementById('cpuModeBox').style.display = 'none';
+  document.getElementById('statusBar').innerHTML = '🤖 <b style="color:#ff6b35">CPU</b> bilan o\'yin';
+  document.getElementById('oppNameArena').textContent = 'CPU';
+  document.getElementById('oppNameLabel').textContent = 'CPU';
+
+  // Raund ko'rsatgich
+  const rb = document.getElementById('roundBar');
+  if(cpuMaxRounds > 0){
+    rb.style.display = 'block';
+    document.getElementById('roundTotal').textContent = cpuMaxRounds;
+    updateRoundBar();
+  } else {
+    rb.style.display = 'none';
+  }
+
+  resetRound(); resetScore(); showS('sGame');
+}
+
+function updateRoundBar(){
+  if(cpuMaxRounds <= 0) return;
+  const played = score.you + score.opp + score.draw;
+  document.getElementById('roundCurrent').textContent = played + 1;
+  document.getElementById('roundScore').textContent   = score.you + '–' + score.opp;
+}
+
+function checkGameOver(){
+  if(cpuMaxRounds <= 0) return false; // cheksiz
+  const played = score.you + score.opp + score.draw;
+  if(played >= cpuMaxRounds){
+    // O'yin tugadi
+    setTimeout(()=>{
+      const w = score.you, l = score.opp;
+      let msg = w > l ? `🏆 Siz yutdingiz! (${w}–${l})`
+              : l > w ? `😢 CPU yutdi! (${l}–${w})`
+              : `🤝 Durrang! (${w}–${l})`;
+      showToast(msg);
+      setTimeout(()=>{ leaveGame(); }, 2500);
+    }, 2200);
+    return true;
+  }
+  return false;
+}
+
+// ── ONLINE ────────────────────────────────────────────────────
+async function joinRoom(){
+  rAudio();
+  const fc=document.getElementById('friendCode').value.trim().toUpperCase();
+  if(fc.length<4){showToast('Kodni to\'liq kiriting!');return;}
+  if(fc===myCode){showToast('Bu sizning o\'z kodingiz!');return;}
+  sClick();
+  try{
+    const r=await fetch('/api/rps/join/',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({my_code:myCode, my_name:myName, friend_code:fc})
+    });
+    const d=await r.json();
+    roomId=d.room_id;
+    if(d.status==='ok'){
+      oppName=d.opp_name||fc;
+      startOnlineGame();
+    } else {
+      // Kutish — do'st hali kelmagan
+      showS('sWait');
+      waitForFriend(fc);
+    }
+  }catch(e){
+    showToast('❌ Server topilmadi! server_yoq.bat bosing.');
+  }
+}
+
+function waitForFriend(fc){
+  const t=setInterval(async()=>{
+    try{
+      const r=await fetch(`/api/rps/state/?room=${roomId}&code=${myCode}`);
+      const d=await r.json();
+      if(d.status==='ok'){
+        clearInterval(t);
+        oppName=d.opp_name||fc;
+        startOnlineGame();
+      }
+    }catch(e){clearInterval(t);}
+  },1500);
+}
+
+function startOnlineGame(){
+  mode='online';
+  document.getElementById('statusBar').innerHTML=
+    `<span class="online-dot"></span>Do'st: <b style="color:#ff6b35">${oppName}</b>`;
+  document.getElementById('oppNameArena').textContent=oppName;
+  document.getElementById('oppNameLabel').textContent=oppName;
+  resetRound();resetScore();showS('sGame');
+  startPolling();
+}
+
+function cancelWait(){showS('sHome');}
+
+function startPolling(){
+  if(pollTimer) clearInterval(pollTimer);
+  let lastRoundNum = 0;
+  pollTimer = setInterval(async()=>{
+    if(!myC) return;
+    try{
+      const r = await fetch(`/api/rps/state/?room=${roomId}&code=${myCode}`);
+      const d = await r.json();
+      // Yangi raund — oppC tozalash
+      if(d.round_num && d.round_num > lastRoundNum && lastRoundNum > 0){
+        oppC = null;
+      }
+      if(d.round_num) lastRoundNum = d.round_num;
+      // Raqib tanladi
+      if(d.opp_choice && !oppC && myC){
+        oppC = d.opp_choice;
+        checkBoth();
+      }
+      if(d.disconnected){ showToast('Do\'st chiqib ketdi!'); leaveGame(); }
+    }catch(e){}
+  }, 800);
+}
+
+// ── GAME ─────────────────────────────────────────────────────
+function choose(c){
+  if(busy||myC)return;
+  rAudio();sClick();
+  myC=c;
+
+  ['Rock','Paper','Scissors'].forEach(n=>{
+    document.getElementById('b'+n).disabled=true;
+    document.getElementById('b'+n).classList.remove('selected');
+  });
+  document.getElementById('b'+c.charAt(0).toUpperCase()+c.slice(1)).classList.add('selected');
+
+  const mh=document.getElementById('myHand');
+  mh.classList.remove('anim-you','glow-win','glow-lose');
+  void mh.offsetWidth;
+  mh.classList.add('anim-you');
+  mh.addEventListener('animationend',()=>{
+    setHand(mh, c);
+    mh.classList.remove('anim-you');
+  },{once:true});
+
+  if(mode==='cpu'){
+    const cpu=['rock','paper','scissors'][Math.floor(Math.random()*3)];
+    oppC=cpu;
+    const oh=document.getElementById('oppHand');
+    oh.classList.remove('anim-opp','glow-win','glow-lose');
+    // Raqib "o'ylayapti" ko'rsatish
+    setHand(oh, null); oh.className = oh.className.replace(/obj-\w+/g,'').trim();
+    oh.classList.add('obj-thinking');
+    void oh.offsetWidth;
+    oh.classList.add('anim-opp');
+    oh.addEventListener('animationend',()=>{
+      setHand(oh, cpu);
+      oh.classList.remove('anim-opp');
+      showResult();
+    },{once:true});
+  } else {
+    fetch('/api/rps/choice/',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({room:roomId, code:myCode, choice:c})
+    }).catch(()=>{});
+    document.getElementById('waitOpp').textContent=`⏳ ${oppName} kutilmoqda...`;
+    if(oppC) checkBoth();
+  }
+}
+
+function checkBoth(){
+  if(!myC||!oppC)return;
+  document.getElementById('waitOpp').textContent='';
+  const oh=document.getElementById('oppHand');
+  oh.classList.remove('anim-opp','glow-win','glow-lose');
+  void oh.offsetWidth;
+  oh.classList.add('anim-opp');
+  oh.addEventListener('animationend',()=>{
+    setHand(oh, oppC);
+    oh.classList.remove('anim-opp');
+    showResult();
+  },{once:true});
+}
+
+function getRes(me,op){
+  if(me===op)return'draw';
+  const w={rock:'scissors',scissors:'paper',paper:'rock'};
+  return w[me]===op?'win':'lose';
+}
+
+function showResult(){
+  busy=true;
+  const res=getRes(myC,oppC);
+  const mh=document.getElementById('myHand'), oh=document.getElementById('oppHand');
+
+  if(res==='win'){mh.classList.add('glow-win');oh.classList.add('glow-lose');sWin();}
+  else if(res==='lose'){mh.classList.add('glow-lose');oh.classList.add('glow-win');sLose();}
+  else sDrw();
+  const msgs={
+    win:[`🎉 ${myName} yutdi!`,'🔥 Ajoyib!','💪 Zo\'r!','🏆 Champion!'],
+    lose:[`😢 ${oppName} yutdi!`,'💀 Afsuski!','😤 Yana urining!'],
+    draw:['🤝 Durrang!','😐 Barobar!','🔄 Bir xil!']
+  };
+  const el=document.getElementById('resTxt');
+  el.textContent=msgs[res][Math.floor(Math.random()*msgs[res].length)];
+  el.className='result-txt '+res;
+
+  if(res==='win'){score.you++;streak++;}
+  else if(res==='lose'){score.opp++;streak=0;}
+  else{score.draw++;streak=0;}
+
+  // Stats serverga yuborish (agar akkaunt bo'lsa)
+  if(myCode && mode==='cpu'){
+    fetch('/api/rps/stats/', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({game_code: myCode, result: res})
+    }).catch(()=>{});
+  }
+
+  // Raund yangilash
+  updateRoundBar();
+  const gameOver = checkGameOver();
+  if(!gameOver) setTimeout(resetRound, 2200);
+
+  document.getElementById('sYou').textContent=score.you;
+  document.getElementById('sOpp').textContent=score.opp;
+  document.getElementById('sDraw').textContent=score.draw;
+  document.getElementById('streak').textContent=streak>=3?`🔥 ${streak} ta yutish ketma-ket!`:'';
+
+  const icon=res==='win'?'✅':res==='lose'?'❌':'🔵';
+  hist.unshift(icon);if(hist.length>10)hist.pop();
+  document.getElementById('hist').innerHTML=hist.map(h=>`<span class="hi">${h}</span>`).join('');
+}
+
+function resetRound(){
+  myC=null; oppC=null; busy=false;
+  const mh=document.getElementById('myHand');
+  const oh=document.getElementById('oppHand');
+  mh.className='hand-wrap hand-you'; setHand(mh, null);
+  oh.className='hand-wrap';          setHand(oh, null);
+  document.getElementById('resTxt').textContent='Tanlang!';
+  document.getElementById('resTxt').className='result-txt';
+  document.getElementById('waitOpp').textContent='';
+  updateRoundBar();
+  ['Rock','Paper','Scissors'].forEach(n=>{
+    document.getElementById('b'+n).disabled=false;
+    document.getElementById('b'+n).classList.remove('selected');
+  });
+}
+
+function resetScore(){
+  score={you:0,opp:0,draw:0};hist=[];streak=0;
+  document.getElementById('sYou').textContent='0';
+  document.getElementById('sOpp').textContent='0';
+  document.getElementById('sDraw').textContent='0';
+  document.getElementById('hist').innerHTML='';
+  document.getElementById('streak').textContent='';
+}
+
+function leaveGame(){
+  if(pollTimer)clearInterval(pollTimer);
+  mode=null;myC=null;oppC=null;busy=false;
+  resetScore();resetRound();
+  showS('sHome');
+}
+
+// Profildan chiqish (to'liq logout)
+function rpsLogout(){
+  if(confirm('Akkauntdan chiqasizmi?')){
+    leaveGame();
+    doRpsLogout();
+  }
+}
+
+// Klaviatura
+document.addEventListener('keydown',e=>{
+  const k=e.key.toLowerCase();
+  if(k==='r')choose('rock');
+  if(k==='p')choose('paper');
+  if(k==='s')choose('scissors');
+});
+
+// ── START ─────────────────────────────────────────────────────
+const savedName  = localStorage.getItem('rps_name');
+const savedCode  = localStorage.getItem('rps_code');
+const savedToken = localStorage.getItem('rps_token');
+
+// Tab ID — har tab uchun noyob (sessionStorage faqat shu tabda yashaydi)
+const TAB_ID = sessionStorage.getItem('rps_tab_id') ||
+               Math.random().toString(36).substr(2,8);
+sessionStorage.setItem('rps_tab_id', TAB_ID);
+
+// BroadcastChannel — bir xil brauzerda tablar orasida xabar
+const bc = window.BroadcastChannel ? new BroadcastChannel('rps_session') : null;
+
+if(bc){
+  bc.onmessage = (e) => {
+    const d = e.data;
+    if(!d || d.tabId === TAB_ID) return;
+
+    if(d.type === 'LOGIN'){
+      myName=''; myCode='';
+      sessionStorage.removeItem('rps_token');
+      showToast('⚠️ Bu akkauntga boshqa oynadan kirildi!');
+      setTimeout(()=>{
+        document.getElementById('prevNameBox').style.display='none';
+        showS('sName');
+        switchAuthTab('login');
+      }, 800);
+    }
+    if(d.type === 'LOGOUT'){
+      myName=''; myCode='';
+      sessionStorage.removeItem('rps_token');
+    }
+    if(d.type === 'CHECK' && myCode){
+      bc.postMessage({type:'ACTIVE', tabId: TAB_ID});
+    }
+    if(d.type === 'ACTIVE'){
+      document.getElementById('prevNameBox').style.display='none';
+    }
+  };
+}
+
+function broadcastLogin(){
+  if(bc) bc.postMessage({type:'LOGIN', tabId: TAB_ID, username: myName});
+}
+function broadcastLogout(){
+  if(bc) bc.postMessage({type:'LOGOUT', tabId: TAB_ID});
+}
+
+// START
+if(savedName && savedCode){
+  document.getElementById('prevNameText').textContent = savedName;
+  document.getElementById('prevNameBox').style.display = 'block';
+  // Boshqa tab aktiv ekanligini so'rash
+  if(bc){
+    bc.postMessage({type:'CHECK', tabId: TAB_ID});
+    // 600ms ichida ACTIVE javob kelsa — prevNameBox yashiriladi (handler da)
+  }
+}
+showS('sName');
+</script>
+</body>
+</html>

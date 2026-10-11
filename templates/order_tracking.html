@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+{% block title %}📍 Zakaz #{{ order.id }} — Tracking{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tracking-page { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
+
+    .tracking-header {
+        background: linear-gradient(135deg,#ff6b35,#f7931e);
+        border-radius: 20px; padding: 28px; color: white;
+        margin-bottom: 24px; display: flex;
+        justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+    }
+    .tracking-header h2 { font-size: 1.5em; font-weight: 900; }
+    .tracking-header p  { opacity: .9; margin-top: 4px; }
+
+    /* Status steps */
+    .steps {
+        display: flex; justify-content: space-between;
+        background: var(--card-bg); border-radius: 16px;
+        padding: 24px; margin-bottom: 24px;
+        box-shadow: var(--card-shadow); gap: 8px;
+        position: relative;
+    }
+    .steps::before {
+        content: ''; position: absolute;
+        top: 38px; left: 10%; right: 10%;
+        height: 3px; background: var(--border); z-index: 0;
+    }
+    .step-item { flex: 1; text-align: center; position: relative; z-index: 1; }
+    .step-dot {
+        width: 40px; height: 40px; border-radius: 50%;
+        background: var(--bg3); margin: 0 auto 8px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1em; transition: all .3s;
+        border: 3px solid var(--border);
+    }
+    .step-item.done   .step-dot { background: #ff6b35; border-color: #ff6b35; }
+    .step-item.active .step-dot {
+        background: #ff6b35; border-color: #ff6b35;
+        box-shadow: 0 0 0 6px rgba(255,107,53,.25);
+        animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+        0%   { box-shadow: 0 0 0 0 rgba(255,107,53,.4); }
+        70%  { box-shadow: 0 0 0 10px rgba(255,107,53,0); }
+        100% { box-shadow: 0 0 0 0 rgba(255,107,53,0); }
+    }
+    .step-label { font-size: .75em; font-weight: 700; color: var(--text3); }
+    .step-item.done .step-label, .step-item.active .step-label { color: #ff6b35; }
+
+    /* Map */
+    #map {
+        width: 100%; height: 420px;
+        border-radius: 20px; overflow: hidden;
+        box-shadow: var(--card-shadow);
+        margin-bottom: 24px;
+        background: var(--bg3);
+    }
+
+    /* Info cards */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .info-card {
+        background: var(--card-bg); border-radius: 16px;
+        padding: 20px; box-shadow: var(--card-shadow);
+    }
+    .info-card h3 { font-size: .85em; color: var(--text3); margin-bottom: 8px; }
+    .info-card p  { font-weight: 700; color: var(--text); }
+
+    /* Order items */
+    .order-items-card {
+        background: var(--card-bg); border-radius: 16px;
+        padding: 24px; box-shadow: var(--card-shadow);
+    }
+    .order-items-card h3 { font-weight: 800; margin-bottom: 16px; color: var(--text); }
+    .oi-row {
+        display: flex; justify-content: space-between;
+        padding: 8px 0; border-bottom: 1px solid var(--border);
+        font-size: .93em; color: var(--text2);
+    }
+    .oi-row:last-of-type { border-bottom: none; }
+    .total-row {
+        display: flex; justify-content: space-between;
+        padding-top: 14px; font-size: 1.1em;
+        font-weight: 900; color: #ff6b35;
+        border-top: 2px solid var(--border); margin-top: 8px;
+    }
+
+    .refresh-btn {
+        display: flex; align-items: center; gap: 8px;
+        background: var(--bg3); border: none; color: var(--text2);
+        padding: 10px 18px; border-radius: 20px; cursor: pointer;
+        font-size: .9em; transition: all .2s;
+    }
+    .refresh-btn:hover { background: #ff6b35; color: white; }
+
+    @media(max-width:600px) {
+        .info-grid { grid-template-columns: 1fr; }
+        #map { height: 300px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="tracking-page">
+
+    <!-- Header -->
+    <div class="tracking-header">
+        <div>
+            <h2>📍 Zakaz #{{ order.id }}</h2>
+            <p>{{ order.created_at|date:"d.m.Y H:i" }} • {{ order.customer_name }}</p>
+        </div>
+        <button class="refresh-btn" onclick="refreshStatus()">
+            🔄 Yangilash
+        </button>
+    </div>
+
+    <!-- Status steps -->
+    <div class="steps" id="stepsBlock">
+        {% with s=order.status %}
+        <div class="step-item {% if s in 'pending confirmed preparing on_way delivered' %}done{% endif %}">
+            <div class="step-dot">⏳</div>
+            <div class="step-label">Qabul</div>
+        </div>
+        <div class="step-item {% if s in 'confirmed preparing on_way delivered' %}done{% elif s == 'pending' %}active{% endif %}">
+            <div class="step-dot">✅</div>
+            <div class="step-label">Tasdiqlandi</div>
+        </div>
+        <div class="step-item {% if s in 'preparing on_way delivered' %}done{% elif s == 'confirmed' %}active{% endif %}">
+            <div class="step-dot">👨‍🍳</div>
+            <div class="step-label">Tayyorlanmoqda</div>
+        </div>
+        <div class="step-item {% if s in 'on_way delivered' %}done{% elif s == 'preparing' %}active{% endif %}">
+            <div class="step-dot">🚴</div>
+            <div class="step-label">Yo'lda</div>
+        </div>
+        <div class="step-item {% if s == 'delivered' %}done active{% elif s == 'on_way' %}active{% endif %}">
+            <div class="step-dot">🎉</div>
+            <div class="step-label">Yetkazildi</div>
+        </div>
+        {% endwith %}
+    </div>
+
+    <!-- Google Map -->
+    <div id="map"></div>
+
+    <!-- Info -->
+    <div class="info-grid">
+        <div class="info-card">
+            <h3>📦 Holat</h3>
+            <p id="statusText">{{ order.get_status_display }}</p>
+        </div>
+        <div class="info-card">
+            <h3>📞 Telefon</h3>
+            <p>{{ order.customer_phone }}</p>
+        </div>
+        <div class="info-card">
+            <h3>📍 Manzil</h3>
+            <p>{{ order.customer_address }}</p>
+        </div>
+        <div class="info-card">
+            <h3>🕐 Vaqt</h3>
+            <p>{{ order.created_at|date:"H:i" }} — taxminan 30 daqiqa</p>
+        </div>
+    </div>
+
+    <!-- Order items -->
+    <div class="order-items-card">
+        <h3>🍴 Buyurtma tarkibi</h3>
+        {% for item in order.items.all %}
+        <div class="oi-row">
+            <span>{{ item.menu_item.name }} × {{ item.quantity }}</span>
+            <span>{{ item.subtotal }} so'm</span>
+        </div>
+        {% endfor %}
+        <div class="oi-row">
+            <span>🚚 Yetkazib berish</span>
+            <span>5 000 so'm</span>
+        </div>
+        <div class="total-row">
+            <span>Jami</span>
+            <span>{{ order.total_price }} so'm</span>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ORDER_ID      = {{ order.id }};
+const REST_LAT      = {{ restaurant_lat }};
+const REST_LNG      = {{ restaurant_lng }};
+const CUST_LAT      = {{ order.customer_lat|default:"null" }};
+const CUST_LNG      = {{ order.customer_lng|default:"null" }};
+let   COURIER_LAT   = {{ order.courier_lat|default:"null" }};
+let   COURIER_LNG   = {{ order.courier_lng|default:"null" }};
+
+let map, restMarker, custMarker, courierMarker;
+
+function initMap() {
+    // Xarita markazini aniqlash
+    const center = CUST_LAT && CUST_LNG
+        ? { lat: (REST_LAT + CUST_LAT) / 2, lng: (REST_LNG + CUST_LNG) / 2 }
+        : { lat: REST_LAT, lng: REST_LNG };
+
+    map = new google.maps.Map(document.getElementById('map'), {
+        center, zoom: 13,
+        styles: document.documentElement.getAttribute('data-theme') === 'dark' ? darkMapStyle : [],
+    });
+
+    // Restoran markeri
+    restMarker = new google.maps.Marker({
+        position: { lat: REST_LAT, lng: REST_LNG },
+        map,
+        title: '🍽️ Lazzat Restaurant',
+        icon: {
+            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">' +
+                '<circle cx="20" cy="20" r="18" fill="#ff6b35"/>' +
+                '<text x="20" y="26" font-size="18" text-anchor="middle">🍽️</text></svg>'
+            ),
+            scaledSize: new google.maps.Size(40, 40),
+        }
+    });
+
+    new google.maps.InfoWindow({ content: '<b>🍽️ Lazzat Restaurant</b>' }).open(map, restMarker);
+
+    // Mijoz markeri
+    if (CUST_LAT && CUST_LNG) {
+        custMarker = new google.maps.Marker({
+            position: { lat: CUST_LAT, lng: CUST_LNG },
+            map,
+            title: '🏠 Siz',
+            icon: {
+                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">' +
+                    '<circle cx="20" cy="20" r="18" fill="#3b82f6"/>' +
+                    '<text x="20" y="26" font-size="18" text-anchor="middle">🏠</text></svg>'
+                ),
+                scaledSize: new google.maps.Size(40, 40),
+            }
+        });
+
+        // Restoran → Mijoz yo'l
+        new google.maps.Polyline({
+            path: [
+                { lat: REST_LAT, lng: REST_LNG },
+                { lat: CUST_LAT, lng: CUST_LNG }
+            ],
+            map,
+            strokeColor: '#ff6b35',
+            strokeOpacity: 0.6,
+            strokeWeight: 3,
+            geodesic: true,
+        });
+
+        // Chegarani avtomatik ko'rsatish
+        const bounds = new google.maps.LatLngBounds();
+        bounds.extend({ lat: REST_LAT, lng: REST_LNG });
+        bounds.extend({ lat: CUST_LAT, lng: CUST_LNG });
+        map.fitBounds(bounds, { padding: 60 });
+    }
+
+    // Kuryer markeri
+    if (COURIER_LAT && COURIER_LNG) updateCourierMarker(COURIER_LAT, COURIER_LNG);
+}
+
+function updateCourierMarker(lat, lng) {
+    const pos = { lat, lng };
+    if (courierMarker) {
+        courierMarker.setPosition(pos);
+    } else {
+        courierMarker = new google.maps.Marker({
+            position: pos, map,
+            title: '🚴 Kuryer',
+            icon: {
+                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44">' +
+                    '<circle cx="22" cy="22" r="20" fill="#10b981"/>' +
+                    '<text x="22" y="29" font-size="20" text-anchor="middle">🚴</text></svg>'
+                ),
+                scaledSize: new google.maps.Size(44, 44),
+            },
+            animation: google.maps.Animation.BOUNCE,
+        });
+    }
+}
+
+async function refreshStatus() {
+    try {
+        const res  = await fetch(`/api/order/${ORDER_ID}/`);
+        const data = await res.json();
+        if (data.status !== 'ok') return;
+
+        const o = data.order;
+        document.getElementById('statusText').textContent = o.status_display;
+
+        // Kuryer joylashuvi yangilash
+        if (o.courier_lat && o.courier_lng) {
+            COURIER_LAT = o.courier_lat;
+            COURIER_LNG = o.courier_lng;
+            updateCourierMarker(o.courier_lat, o.courier_lng);
+        }
+
+        // Sahifani yangilash (status o'zgarsa)
+        if (o.status === 'delivered') {
+            showToast('🎉 Zakazingiz yetkazildi!');
+        }
+    } catch(e) {}
+}
+
+// Har 30 soniyada avtomatik yangilash
+setInterval(refreshStatus, 30000);
+
+// Dark map style
+const darkMapStyle = [
+    {elementType:'geometry',stylers:[{color:'#212121'}]},
+    {elementType:'labels.icon',stylers:[{visibility:'off'}]},
+    {elementType:'labels.text.fill',stylers:[{color:'#757575'}]},
+    {elementType:'labels.text.stroke',stylers:[{color:'#212121'}]},
+    {featureType:'road',elementType:'geometry',stylers:[{color:'#424242'}]},
+    {featureType:'road.arterial',elementType:'labels.text.fill',stylers:[{color:'#757575'}]},
+    {featureType:'water',elementType:'geometry',stylers:[{color:'#000000'}]},
+];
+</script>
+
+<!-- Google Maps API — API key kerak emas (development uchun) -->
+<script async defer
+    src="https://maps.googleapis.com/maps/api/js?callback=initMap">
+</script>
+{% endblock %}

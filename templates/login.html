@@ -1,0 +1,424 @@
+{% extends "base.html" %}
+{% block title %}🔐 Kirish - Lazzat Restaurant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-page {
+        min-height: 80vh; display: flex;
+        align-items: center; justify-content: center;
+        padding: 40px 20px; background: var(--bg);
+    }
+    .auth-card {
+        background: var(--card-bg); border-radius: 24px;
+        padding: 44px 40px; width: 100%; max-width: 440px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15); text-align: center;
+    }
+    .auth-logo { font-size: 3.5em; margin-bottom: 10px; }
+    .auth-card h1 { font-size: 1.8em; font-weight: 900; color: var(--text); margin-bottom: 6px; }
+    .auth-card > p { color: var(--text2); margin-bottom: 28px; font-size: .95em; }
+
+    /* Tabs */
+    .auth-tabs {
+        display: flex; gap: 4px; background: var(--bg3);
+        border-radius: 12px; padding: 4px; margin-bottom: 28px;
+    }
+    .auth-tab {
+        flex: 1; padding: 10px; border: none; border-radius: 9px;
+        background: none; color: var(--text2); font-weight: 700;
+        font-size: .92em; cursor: pointer; transition: all .2s;
+    }
+    .auth-tab.active {
+        background: var(--card-bg); color: #ff6b35;
+        box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .form-group { margin-bottom: 15px; text-align: left; }
+    .form-group label {
+        display: block; font-weight: 700; font-size: .87em;
+        color: var(--text2); margin-bottom: 6px;
+    }
+    .form-group input {
+        width: 100%; padding: 13px 16px;
+        border: 2px solid var(--border); border-radius: 12px;
+        font-size: 1em; background: var(--input-bg); color: var(--text);
+        outline: none; transition: border-color .2s;
+    }
+    .form-group input:focus { border-color: #ff6b35; }
+    .form-group .input-hint { font-size: .78em; color: var(--text3); margin-top: 4px; }
+
+    .btn-main {
+        width: 100%; padding: 14px;
+        background: linear-gradient(135deg,#ff6b35,#f7931e);
+        color: white; border: none; border-radius: 14px;
+        font-size: 1.05em; font-weight: 700; cursor: pointer;
+        transition: all .2s; margin-top: 4px;
+    }
+    .btn-main:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(255,107,53,.35); }
+    .btn-main:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    .divider {
+        display: flex; align-items: center; gap: 12px;
+        color: var(--text3); font-size: .85em; margin: 18px 0;
+    }
+    .divider::before, .divider::after {
+        content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* OTP qismi */
+    .otp-step { display: none; }
+    .otp-step.active { display: block; }
+    .otp-inputs { display: flex; gap: 8px; justify-content: center; margin: 18px 0; }
+    .otp-inputs input {
+        width: 50px; height: 58px; text-align: center; font-size: 1.6em;
+        font-weight: 900; border: 2px solid var(--border); border-radius: 12px;
+        background: var(--input-bg); color: var(--text); outline: none; transition: border-color .2s;
+    }
+    .otp-inputs input:focus { border-color: #ff6b35; }
+    .timer { font-size: .85em; color: var(--text3); margin-top: 10px; }
+    .timer span { color: #ff6b35; font-weight: 700; }
+
+    .btn-back-link {
+        background: none; border: none; color: var(--text3);
+        font-size: .88em; cursor: pointer; margin-bottom: 16px;
+        padding: 0; display: inline-flex; align-items: center; gap: 5px;
+    }
+    .btn-back-link:hover { color: #ff6b35; }
+
+    .msg-box {
+        padding: 11px 14px; border-radius: 10px; font-size: .88em;
+        margin-bottom: 14px; display: none; text-align: left;
+    }
+    .msg-box.error   { background: #fff0f0; color: #e53e3e; border: 1px solid #fed7d7; }
+    .msg-box.success { background: #f0fff4; color: #276749; border: 1px solid #c6f6d5; }
+
+    .pw-toggle {
+        position: relative;
+    }
+    .pw-toggle input { padding-right: 46px; }
+    .pw-toggle button {
+        position: absolute; right: 14px; top: 50%;
+        transform: translateY(-50%); background: none;
+        border: none; cursor: pointer; font-size: 1.1em; color: var(--text3);
+    }
+
+    .strength-bar {
+        height: 4px; border-radius: 4px; margin-top: 6px;
+        transition: width .3s, background .3s;
+        width: 0;
+    }
+
+    @media(max-width:480px){ .auth-card { padding: 32px 24px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+<div class="auth-card">
+    <div class="auth-logo">🍽️</div>
+    <h1>Lazzat Restaurant</h1>
+    <p>Kirish yoki yangi akkaunt ochish</p>
+
+    <!-- Til tanlash -->
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+        <button onclick="setLang('uz')" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:.85em;">🇺🇿 UZ</button>
+        <button onclick="setLang('ru')" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:.85em;">🇷🇺 RU</button>
+        <button onclick="setLang('kz')" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:.85em;">🇰🇿 KZ</button>
+        <button onclick="setLang('en')" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:.85em;">🇬🇧 EN</button>
+        <button onclick="setLang('tr')" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:.85em;">🇹🇷 TR</button>
+        <button onclick="setLang('ar')" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:.85em;">🇸🇦 AR</button>
+        <button onclick="setLang('ko')" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:.85em;">🇰🇷 KO</button>
+        <button onclick="setLang('zh')" style="padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:.85em;">🇨🇳 ZH</button>
+    </div>
+
+    <div id="msgBox" class="msg-box"></div>
+
+    <!-- TABS -->
+    <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">🔐 Kirish</button>
+        <button class="auth-tab"        onclick="switchTab('register')">✨ Ro'yxatdan o'tish</button>
+    </div>
+
+    <!-- ══ TAB 1: PAROL BILAN KIRISH ══ -->
+    <div class="tab-panel active" id="tabLogin">
+        <div class="form-group">
+            <label>📧 Email</label>
+            <input type="email" id="loginEmail" placeholder="example@gmail.com"
+                onkeydown="if(event.key==='Enter') loginWithPassword()">
+        </div>
+        <div class="form-group">
+            <label>🔒 Parol</label>
+            <div class="pw-toggle">
+                <input type="password" id="loginPassword" placeholder="Parolingiz"
+                    onkeydown="if(event.key==='Enter') loginWithPassword()">
+                <button type="button" onclick="togglePw('loginPassword', this)">👁️</button>
+            </div>
+        </div>
+        <button class="btn-main" onclick="loginWithPassword()" id="btnLogin">
+            🔐 Kirish
+        </button>
+        <div class="divider">yoki</div>
+        <a href="/" style="color:var(--text3);font-size:.88em;display:block;text-align:center;">
+            ← Bosh sahifaga qaytish
+        </a>
+    </div>
+
+    <!-- ══ TAB 2: RO'YXATDAN O'TISH ══ -->
+    <div class="tab-panel" id="tabRegister">
+        <div class="form-group">
+            <label>👤 Ism *</label>
+            <input type="text" id="regName" placeholder="Ismingliz">
+        </div>
+        <div class="form-group">
+            <label>📧 Email *</label>
+            <input type="email" id="regEmail" placeholder="example@gmail.com">
+        </div>
+        <div class="form-group">
+            <label>🔒 Parol *</label>
+            <div class="pw-toggle">
+                <input type="password" id="regPassword" placeholder="Kamida 6 ta belgi"
+                    oninput="checkStrength(this.value)">
+                <button type="button" onclick="togglePw('regPassword', this)">👁️</button>
+            </div>
+            <div class="strength-bar" id="strengthBar"></div>
+            <div class="input-hint" id="strengthText"></div>
+        </div>
+        <div class="form-group">
+            <label>🔒 Parolni tasdiqlang *</label>
+            <div class="pw-toggle">
+                <input type="password" id="regPassword2" placeholder="Parolni qaytaring"
+                    onkeydown="if(event.key==='Enter') doRegister()">
+                <button type="button" onclick="togglePw('regPassword2', this)">👁️</button>
+            </div>
+        </div>
+        <button class="btn-main" onclick="doRegister()" id="btnRegister">
+            ✨ Akkaunt yaratish
+        </button>
+        <p style="margin-top:14px;font-size:.82em;color:var(--text3);">
+            Ro'yxatdan o'tish orqali siz bizning
+            <a href="#" style="color:#ff6b35;">foydalanish shartlarimizga</a> rozilik bildirasiz.
+        </p>
+    </div>
+
+    <!-- ══ TAB 3: EMAIL OTP — o'chirildi ══ -->
+
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let otpEmail = '';
+let timerInterval = null;
+
+// ── Tabs ──────────────────────────────────────────────────────
+function switchTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+    const map = { login: 0, register: 1 };
+    document.querySelectorAll('.tab-panel')[map[name]].classList.add('active');
+    document.querySelectorAll('.auth-tab')[map[name]].classList.add('active');
+    hideMsg();
+}
+
+// ── Xabar ─────────────────────────────────────────────────────
+function showMsg(text, type) {
+    const b = document.getElementById('msgBox');
+    b.textContent = text; b.className = 'msg-box ' + type;
+    b.style.display = 'block';
+    if (type === 'success') setTimeout(() => b.style.display='none', 4000);
+}
+function hideMsg() { document.getElementById('msgBox').style.display = 'none'; }
+
+// ── Parol ko'rish ─────────────────────────────────────────────
+function togglePw(id, btn) {
+    const el = document.getElementById(id);
+    if (el.type === 'password') { el.type = 'text'; btn.textContent = '🙈'; }
+    else { el.type = 'password'; btn.textContent = '👁️'; }
+}
+
+// ── Parol kuchi ───────────────────────────────────────────────
+function checkStrength(val) {
+    const bar = document.getElementById('strengthBar');
+    const txt = document.getElementById('strengthText');
+    if (!val) { bar.style.width='0'; txt.textContent=''; return; }
+    let score = 0;
+    if (val.length >= 6)  score++;
+    if (val.length >= 10) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^a-zA-Z0-9]/.test(val)) score++;
+    const levels = [
+        { w:'20%', c:'#e53e3e', t:'Juda zaif' },
+        { w:'40%', c:'#ed8936', t:'Zaif' },
+        { w:'60%', c:'#ecc94b', t:'O\'rtacha' },
+        { w:'80%', c:'#48bb78', t:'Yaxshi' },
+        { w:'100%', c:'#38a169', t:'Kuchli 💪' },
+    ];
+    const l = levels[Math.min(score - 1, 4)];
+    bar.style.cssText = `width:${l.w};background:${l.c};height:4px;border-radius:4px;margin-top:6px;transition:all .3s;`;
+    txt.textContent = l.t; txt.style.color = l.c;
+}
+
+// ── Parol bilan kirish ────────────────────────────────────────
+async function loginWithPassword() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pw    = document.getElementById('loginPassword').value;
+    if (!email || !pw) { showMsg('Email va parolni kiriting!', 'error'); return; }
+
+    const btn = document.getElementById('btnLogin');
+    btn.disabled = true; btn.textContent = '⏳ Tekshirilmoqda...';
+
+    try {
+        const res  = await fetch('/auth/login/', {
+            method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':csrf()},
+            body: JSON.stringify({ email, password: pw })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+            showMsg('✅ Muvaffaqiyatli kirdingiz!', 'success');
+            localStorage.setItem('lang', currentLang);
+            setTimeout(() => window.location.href = data.redirect || '/', 800);
+        } else { showMsg(data.message, 'error'); }
+    } catch(e) { showMsg('Ulanishda xato.', 'error'); }
+
+    btn.disabled = false; btn.textContent = '🔐 Kirish';
+}
+
+// ── Ro'yxatdan o'tish ─────────────────────────────────────────
+async function doRegister() {
+    const name  = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const pw    = document.getElementById('regPassword').value;
+    const pw2   = document.getElementById('regPassword2').value;
+
+    if (!name || !email || !pw || !pw2) { showMsg('Barcha maydonlarni to\'ldiring!', 'error'); return; }
+    if (pw !== pw2) { showMsg('Parollar mos kelmaydi!', 'error'); return; }
+    if (pw.length < 6) { showMsg('Parol kamida 6 ta belgi bo\'lishi kerak!', 'error'); return; }
+
+    const btn = document.getElementById('btnRegister');
+    btn.disabled = true; btn.textContent = '⏳ Yaratilmoqda...';
+
+    try {
+        const res  = await fetch('/auth/register/', {
+            method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':csrf()},
+            body: JSON.stringify({ first_name: name, email, password: pw })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+            showMsg('✅ Akkaunt yaratildi! Xush kelibsiz!', 'success');
+            localStorage.setItem('lang', currentLang);
+            setTimeout(() => window.location.href = data.redirect || '/', 900);
+        } else { showMsg(data.message, 'error'); }
+    } catch(e) { showMsg('Ulanishda xato.', 'error'); }
+
+    btn.disabled = false; btn.textContent = '✨ Akkaunt yaratish';
+}
+
+// ── OTP ───────────────────────────────────────────────────────
+async function sendOtp(resend = false) {
+    const email = document.getElementById('otpEmail').value.trim();
+    if (!email || !email.includes('@')) { showMsg('To\'g\'ri email kiriting!', 'error'); return; }
+    otpEmail = email;
+
+    const btn = document.getElementById('btnSendOtp');
+    btn.disabled = true; btn.textContent = '⏳ Yuborilmoqda...';
+
+    try {
+        const res  = await fetch('/auth/send-otp/', {
+            method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':csrf()},
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+            document.getElementById('otpStep1').classList.remove('active');
+            document.getElementById('otpStep2').classList.add('active');
+            document.getElementById('otpEmailShow').textContent = email;
+            clearOtpInputs();
+            startTimer(300);
+            hideMsg();
+            if (resend) showMsg('✅ Yangi kod yuborildi!', 'success');
+        } else { showMsg(data.message, 'error'); }
+    } catch(e) { showMsg('Ulanishda xato. Qayta urining.', 'error'); }
+
+    btn.disabled = false; btn.textContent = '📨 Kod yuborish';
+}
+
+function otpInput(el, idx) {
+    el.value = el.value.replace(/\D/g, '');
+    const digits = document.querySelectorAll('.otp-digit');
+    if (el.value && idx < 5) digits[idx + 1].focus();
+    const code = [...digits].map(d => d.value).join('');
+    document.getElementById('btnVerify').disabled = code.length < 6;
+}
+
+function clearOtpInputs() {
+    document.querySelectorAll('.otp-digit').forEach(d => d.value = '');
+    document.getElementById('btnVerify').disabled = true;
+    setTimeout(() => document.querySelectorAll('.otp-digit')[0]?.focus(), 100);
+}
+
+async function verifyOtp() {
+    const code = [...document.querySelectorAll('.otp-digit')].map(d => d.value).join('');
+    if (code.length < 6) return;
+
+    const btn = document.getElementById('btnVerify');
+    btn.disabled = true; btn.textContent = '⏳ Tekshirilmoqda...';
+
+    try {
+        const res  = await fetch('/auth/verify-otp/', {
+            method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken':csrf()},
+            body: JSON.stringify({ email: otpEmail, code })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+            showMsg('✅ Muvaffaqiyatli kirdingiz!', 'success');
+            clearInterval(timerInterval);
+            localStorage.setItem('lang', currentLang);
+            setTimeout(() => window.location.href = data.redirect || '/', 800);
+        } else {
+            showMsg(data.message, 'error');
+            btn.disabled = false; btn.textContent = '✅ Tasdiqlash';
+        }
+    } catch(e) {
+        showMsg('Ulanishda xato.', 'error');
+        btn.disabled = false; btn.textContent = '✅ Tasdiqlash';
+    }
+}
+
+function backToEmail() {
+    document.getElementById('otpStep2').classList.remove('active');
+    document.getElementById('otpStep1').classList.add('active');
+    clearInterval(timerInterval);
+}
+
+function startTimer(sec) {
+    clearInterval(timerInterval);
+    const el = document.getElementById('countdown');
+    timerInterval = setInterval(() => {
+        const m = Math.floor(sec/60), s = sec%60;
+        el.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+        if (sec <= 0) {
+            clearInterval(timerInterval);
+            showMsg('Kod muddati tugadi. Qayta yuborish tugmasini bosing.', 'error');
+        }
+        sec--;
+    }, 1000);
+}
+
+function csrf() {
+    return document.cookie.split(';').find(c=>c.trim().startsWith('csrftoken='))?.split('=')[1]||'';
+}
+
+// Backspace OTP
+document.addEventListener('keydown', e => {
+    if (e.key === 'Backspace') {
+        const digits = document.querySelectorAll('.otp-digit');
+        const idx = [...digits].indexOf(document.activeElement);
+        if (idx > 0 && !digits[idx].value) digits[idx-1].focus();
+    }
+});
+</script>
+{% endblock %}

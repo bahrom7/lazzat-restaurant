@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}ℹ️ Biz haqimizda - Lazzat Restaurant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-hero { background:linear-gradient(135deg,#1a1a2e,#0f3460);
+        color:white; padding:60px 40px; text-align:center; }
+    .page-hero h1 { font-size:2.5em; font-weight:900; margin-bottom:10px; }
+    .page-hero p { opacity:.85; font-size:1.1em; }
+
+    .about-page { max-width:1100px; margin:0 auto; padding:60px 40px; }
+    .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:50px;
+        align-items:center; margin-bottom:70px; }
+    .about-img { background:linear-gradient(135deg,#ffe8d6,#ffd0b0);
+        border-radius:24px; height:340px;
+        display:flex; align-items:center; justify-content:center;
+        font-size:8em; box-shadow:0 20px 50px rgba(255,107,53,.2); }
+    .about-text h2 { font-size:2em; font-weight:900; margin-bottom:16px; color:var(--text); }
+    .about-text p { color:var(--text2); line-height:1.8; font-size:1.02em; margin-bottom:14px; }
+    .highlight { color:#ff6b35; font-weight:700; }
+
+    .team-section { text-align:center; margin-bottom:70px; }
+    .team-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+        gap:24px; margin-top:36px; }
+    .team-card { background:var(--card-bg); border-radius:18px; padding:32px 20px;
+        box-shadow:var(--card-shadow); transition:all .2s; }
+    .team-card:hover { transform:translateY(-6px); }
+    .team-avatar { font-size:3.5em; margin-bottom:14px; }
+    .team-name { font-weight:800; font-size:1.1em; margin-bottom:6px; color:var(--text); }
+    .team-role { color:#ff6b35; font-size:.9em; font-weight:600; }
+
+    .values-section { background:var(--card-bg); border-radius:24px; padding:50px;
+        box-shadow:var(--card-shadow); }
+    .values-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+        gap:24px; margin-top:36px; }
+    .value-item { text-align:center; padding:20px; }
+    .value-icon { font-size:2.8em; margin-bottom:12px; }
+    .value-title { font-weight:800; font-size:1em; margin-bottom:8px; color:var(--text); }
+    .value-text { color:var(--text2); font-size:.88em; line-height:1.5; }
+
+    @media(max-width:700px){
+        .about-grid { grid-template-columns:1fr; }
+        .about-page { padding:30px 20px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+    <h1 data-i18n="about_title">ℹ️ Biz Haqimizda</h1>
+    <p data-i18n="about_sub">2015-yildan beri mazali ovqatlar taqdim etib kelmoqdamiz</p>
+</div>
+
+<div class="about-page">
+    <div class="about-grid">
+        <div class="about-img">🍽️</div>
+        <div class="about-text">
+            <h2 data-i18n="our_story">Bizning Hikoyamiz</h2>
+            <p data-i18n="story_p1"><span class="highlight">Lazzat Restaurant</span> 2015-yilda kichik bir oilaviy restoran sifatida ochildi. Bizning maqsadimiz har bir mijozga uyidagidek issiq va mazali ovqat taqdim etish edi.</p>
+            <p data-i18n="story_p2">Yillar davomida biz o'sdik, lekin asosiy qoidamiz o'zgarmadi: <span class="highlight">toza mahsulot, sevgi bilan pishirilgan ovqat va iliq xizmat</span>.</p>
+            <p data-i18n="story_p3">Bugun bizda <strong>90+ ta taom</strong> va <strong>500+ doimiy mijoz</strong> bor. Onlayn zakaz tizimimiz orqali uyingizdan chiqmay buyurtma berishingiz mumkin!</p>
+            <a href="/menu/" class="btn-orange" style="margin-top:10px;" data-i18n="see_menu">🍔 Menyuni ko'rish</a>
+        </div>
+    </div>
+
+    <div class="team-section">
+        <h2 class="section-title" data-i18n="our_team">👨‍🍳 Bizning Jamoa</h2>
+        <p class="section-sub" data-i18n="team_sub">Har kuni siz uchun mehnat qiladi</p>
+        <div class="team-grid">
+            <div class="team-card">
+                <div class="team-avatar">👨‍🍳</div>
+                <div class="team-name">Javlon Toshmatov</div>
+                <div class="team-role" data-i18n="role_chef">Bosh Oshpaz</div>
+            </div>
+            <div class="team-card">
+                <div class="team-avatar">👩‍🍳</div>
+                <div class="team-name">Malika Yusupova</div>
+                <div class="team-role" data-i18n="role_soup">Sho'rva Ustasi</div>
+            </div>
+            <div class="team-card">
+                <div class="team-avatar">🧑‍🍳</div>
+                <div class="team-name">Sardor Raximov</div>
+                <div class="team-role" data-i18n="role_pastry">Konditer</div>
+            </div>
+            <div class="team-card">
+                <div class="team-avatar">🚴</div>
+                <div class="team-name">Sanjar Abdullayev</div>
+                <div class="team-role" data-i18n="role_delivery">Kuryer</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="values-section">
+        <div style="text-align:center;">
+            <h2 class="section-title" data-i18n="our_values">Bizning Qadriyatlar</h2>
+            <p class="section-sub" data-i18n="values_sub">Nima uchun 500+ mijoz bizni tanladi</p>
+        </div>
+        <div class="values-grid">
+            <div class="value-item">
+                <div class="value-icon">🌿</div>
+                <div class="value-title" data-i18n="val1_title">Yangi mahsulot</div>
+                <div class="value-text"  data-i18n="val1_text">Har kuni yangi va toza mahsulotlar bilan ishlaymiz</div>
+            </div>
+            <div class="value-item">
+                <div class="value-icon">❤️</div>
+                <div class="value-title" data-i18n="val2_title">Sevgi bilan</div>
+                <div class="value-text"  data-i18n="val2_text">Har bir taomni qalbimiz bilan tayyorlaymiz</div>
+            </div>
+            <div class="value-item">
+                <div class="value-icon">⚡</div>
+                <div class="value-title" data-i18n="val3_title">Tezlik</div>
+                <div class="value-text"  data-i18n="val3_text">30 daqiqada yetkazib berishga kafolat beramiz</div>
+            </div>
+            <div class="value-item">
+                <div class="value-icon">🎯</div>
+                <div class="value-title" data-i18n="val4_title">Sifat</div>
+                <div class="value-text"  data-i18n="val4_text">Eng yuqori sifat nazorati</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

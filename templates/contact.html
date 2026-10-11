@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}📞 Kontakt - Lazzat Restaurant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-hero { background:linear-gradient(135deg,#1a1a2e,#0f3460);
+        color:white; padding:60px 40px; text-align:center; }
+    .page-hero h1 { font-size:2.5em; font-weight:900; margin-bottom:10px; }
+    .page-hero p { opacity:.85; font-size:1.1em; }
+
+    .contact-page { max-width:1100px; margin:0 auto; padding:60px 40px; }
+    .contact-grid { display:grid; grid-template-columns:1fr 1.3fr; gap:40px; align-items:start; }
+
+    .contact-info { display:flex; flex-direction:column; gap:16px; }
+    .info-card { background:var(--card-bg); border-radius:16px; padding:24px;
+        box-shadow:var(--card-shadow); display:flex; gap:16px; align-items:flex-start; transition:transform .2s; }
+    .info-card:hover { transform:translateY(-4px); }
+    .info-icon { font-size:2em; background:linear-gradient(135deg,#ff6b35,#f7931e);
+        width:55px; height:55px; border-radius:14px;
+        display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .info-content h3 { font-weight:800; margin-bottom:5px; color:var(--text); }
+    .info-content p { color:var(--text2); font-size:.93em; line-height:1.5; }
+    .info-content a { color:#ff6b35; font-weight:700; }
+
+    .contact-form-card { background:var(--card-bg); border-radius:20px; padding:36px;
+        box-shadow:0 8px 30px rgba(0,0,0,.1); }
+    .contact-form-card h2 { font-size:1.6em; font-weight:900; margin-bottom:6px; color:var(--text); }
+    .contact-form-card .sub { color:var(--text2); margin-bottom:28px; }
+
+    .form-group { margin-bottom:16px; }
+    .form-group label { display:block; font-weight:700; font-size:.9em; color:var(--text2); margin-bottom:6px; }
+    .form-group input, .form-group textarea, .form-group select {
+        width:100%; padding:13px 16px; border:2px solid var(--border); border-radius:12px;
+        font-size:1em; outline:none; transition:border-color .2s; font-family:inherit;
+        background:var(--input-bg); color:var(--text); }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color:#ff6b35; }
+    .form-group textarea { resize:none; height:120px; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .submit-btn { width:100%; background:linear-gradient(135deg,#ff6b35,#f7931e);
+        color:white; border:none; padding:16px; border-radius:14px;
+        font-size:1.05em; font-weight:700; cursor:pointer; transition:all .2s; }
+    .submit-btn:hover { transform:translateY(-2px); box-shadow:0 10px 25px rgba(255,107,53,.4); }
+    .success-msg { display:none; background:#e8f5e9; color:#2e7d32; border-radius:12px;
+        padding:14px; text-align:center; font-weight:700; margin-top:14px; }
+
+    .hours-card { background:linear-gradient(135deg,#ff6b35,#f7931e);
+        border-radius:16px; padding:24px; color:white; margin-top:16px; }
+    .hours-card h3 { font-size:1.1em; margin-bottom:14px; }
+    .hour-row { display:flex; justify-content:space-between; padding:6px 0;
+        font-size:.93em; border-bottom:1px solid rgba(255,255,255,.2); }
+    .hour-row:last-child { border-bottom:none; }
+
+    @media(max-width:768px){
+        .contact-grid { grid-template-columns:1fr; }
+        .form-row { grid-template-columns:1fr; }
+        .contact-page { padding:30px 20px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+    <h1 data-i18n="contact_title">📞 Biz bilan bog'laning</h1>
+    <p data-i18n="contact_sub">Savollaringiz bormi? Biz har doim yordam berishga tayyormiz!</p>
+</div>
+
+<div class="contact-page">
+    <div class="contact-grid">
+        <div>
+            <div class="contact-info">
+                <div class="info-card">
+                    <div class="info-icon">📍</div>
+                    <div class="info-content">
+                        <h3 data-i18n="address_label">Manzil</h3>
+                        <p data-i18n="address_val">Toshkent sh., Chilonzor tumani, Bunyodkor ko'chasi 12-uy</p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">📞</div>
+                    <div class="info-content">
+                        <h3 data-i18n="phone_label">Telefon</h3>
+                        <p><a href="tel:+998901234567">+998 90 123 45 67</a></p>
+                        <p><a href="tel:+998991234567">+998 99 123 45 67</a></p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">📧</div>
+                    <div class="info-content">
+                        <h3>Email</h3>
+                        <p><a href="mailto:info@lazzat.uz">info@lazzat.uz</a></p>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon">💬</div>
+                    <div class="info-content">
+                        <h3>Telegram</h3>
+                        <p><a href="#">@lazzat_restaurant</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hours-card">
+                <h3 data-i18n="work_hours">⏰ Ish vaqti</h3>
+                <div class="hour-row"><span data-i18n="weekdays">Dushanba – Juma</span><span>09:00 – 22:00</span></div>
+                <div class="hour-row"><span data-i18n="saturday">Shanba</span><span>10:00 – 23:00</span></div>
+                <div class="hour-row"><span data-i18n="sunday">Yakshanba</span><span>10:00 – 21:00</span></div>
+            </div>
+        </div>
+
+        <div class="contact-form-card">
+            <h2 data-i18n="send_msg">✉️ Xabar yuborish</h2>
+            <p class="sub" data-i18n="reply_time">24 soat ichida javob beramiz</p>
+
+            {% if sent %}
+            <div class="success-msg" style="display:block;" data-i18n="msg_sent">
+                ✅ Xabaringiz qabul qilindi! Tez orada javob beramiz.
+            </div>
+            {% endif %}
+
+            <form method="POST" action="/contact/">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label data-i18n="your_name">Ismingiz *</label>
+                        <input type="text" name="name" required data-i18n-ph="name_ph" placeholder="Ism">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="phone_label">Telefon *</label>
+                        <input type="tel" name="phone" required placeholder="+998 90 ...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" placeholder="email@example.com">
+                </div>
+                <div class="form-group">
+                    <label data-i18n="subject">Mavzu</label>
+                    <select name="subject" id="subjectSelect">
+                        <option value="order"    data-i18n="subj_order">📦 Zakaz haqida</option>
+                        <option value="quality"  data-i18n="subj_quality">⭐ Sifat haqida</option>
+                        <option value="delivery" data-i18n="subj_delivery">🚚 Yetkazish haqida</option>
+                        <option value="other"    data-i18n="subj_other">💬 Boshqa</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label data-i18n="your_msg">Xabaringiz *</label>
+                    <textarea name="message" required data-i18n-ph="msg_ph" placeholder="Xabaringizni yozing..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn" data-i18n="send_btn">📨 Xabar yuborish</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// select options are not handled by data-i18n auto scan — do it manually
+function updateSelectOptions() {
+    document.querySelectorAll('#subjectSelect option[data-i18n]').forEach(opt => {
+        opt.textContent = t(opt.dataset.i18n);
+    });
+}
+// Hook into applyLang
+const _origApplyLang = window._postLangHook || [];
+window._postLangHook = [..._origApplyLang, updateSelectOptions];
+updateSelectOptions();
+</script>
+{% endblock %}

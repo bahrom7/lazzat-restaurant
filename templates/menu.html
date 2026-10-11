@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}🍔 Menyu - Lazzat Restaurant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-hero { background:linear-gradient(135deg,#ff6b35,#f7931e);
+        color:white; padding:50px 40px; text-align:center; }
+    .page-hero h1 { font-size:2.5em; font-weight:900; margin-bottom:8px; }
+    .page-hero p { opacity:.9; font-size:1.1em; }
+
+    .menu-page { max-width:1200px; margin:0 auto; padding:40px; }
+    .search-bar { display:flex; gap:12px; margin-bottom:28px; flex-wrap:wrap; }
+    .search-bar input { flex:1; min-width:220px; padding:13px 18px;
+        border:2px solid var(--border); border-radius:30px; font-size:1em;
+        outline:none; transition:border-color .2s;
+        background:var(--input-bg); color:var(--text); }
+    .search-bar input:focus { border-color:#ff6b35; }
+
+    .cat-tabs { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:36px; }
+    .cat-tab { padding:9px 20px; border-radius:25px; border:2px solid var(--border);
+        background:var(--card-bg); color:var(--text); cursor:pointer;
+        font-weight:600; font-size:.95em; transition:all .2s; }
+    .cat-tab:hover, .cat-tab.active { background:#ff6b35; color:white; border-color:#ff6b35; }
+
+    .menu-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(265px,1fr)); gap:22px; }
+    .menu-card { background:var(--card-bg); border-radius:18px; overflow:hidden;
+        box-shadow:var(--card-shadow); transition:all .2s; }
+    .menu-card:hover { transform:translateY(-6px); box-shadow:0 16px 40px rgba(0,0,0,.14); }
+    .card-img { width:100%; height:168px; overflow:hidden;
+        background:linear-gradient(135deg,#ffe8d6,#ffd0b0);
+        display:flex; align-items:center; justify-content:center; font-size:4em; }
+    .card-img img { width:100%; height:100%; object-fit:cover; }
+    .card-body { padding:18px; }
+    .card-cat { font-size:.8em; color:#ff6b35; font-weight:700; margin-bottom:5px; }
+    .card-name { font-size:1.1em; font-weight:800; margin-bottom:6px; color:var(--text); }
+    .card-desc { font-size:.88em; color:var(--text2); line-height:1.4; margin-bottom:14px; }
+    .card-footer { display:flex; justify-content:space-between; align-items:center; }
+    .price { font-size:1.2em; font-weight:900; color:#ff6b35; }
+    .add-btn { background:linear-gradient(135deg,#ff6b35,#f7931e); color:white;
+        border:none; padding:9px 20px; border-radius:20px;
+        font-weight:700; cursor:pointer; transition:all .2s; }
+    .add-btn:hover { transform:scale(1.05); }
+    .empty-msg { text-align:center; padding:80px 20px; color:var(--text3); grid-column:1/-1; }
+    .empty-msg span { font-size:4em; display:block; margin-bottom:14px; }
+    @media(max-width:700px){ .menu-page { padding:20px; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+    <h1 data-i18n="menu_title">🍔 Bizning Menyu</h1>
+    <p>{{ total_items }} <span data-i18n="menu_sub">ta mazali taom sizni kutmoqda</span></p>
+</div>
+
+<div class="menu-page">
+    <div class="search-bar">
+        <input type="text" id="searchInput" data-i18n-ph="search_ph"
+            placeholder="🔍 Ovqat nomini qidiring..." oninput="filterMenu()">
+    </div>
+
+    <div class="cat-tabs">
+        <button class="cat-tab active" onclick="setCat('all',this)" data-i18n="all">🍽️ Hammasi</button>
+        {% for cat in categories %}
+        <button class="cat-tab" onclick="setCat('{{ cat.id }}',this)">{{ cat.icon }}
+            <span data-uz="{{ cat.name }}"
+                  data-ru="{{ cat.name_ru|default:cat.name }}"
+                  data-kz="{{ cat.name_kz|default:cat.name }}"
+                  data-en="{{ cat.name_en|default:cat.name }}"
+                  data-tr="{{ cat.name_tr|default:cat.name }}"
+                  data-ar="{{ cat.name_ar|default:cat.name }}"
+                  data-ko="{{ cat.name_ko|default:cat.name }}"
+                  data-zh="{{ cat.name_zh|default:cat.name }}">{{ cat.name }}</span>
+        </button>
+        {% endfor %}
+    </div>
+
+    <div class="menu-grid" id="menuGrid">
+        {% for item in all_items %}
+        <div class="menu-card" data-cat="{{ item.category.id }}" data-name="{{ item.name|lower }}">
+            <div class="card-img">
+                {% if item.image_url %}<img src="{{ item.image_url }}" alt="{{ item.name }}"
+                    onerror="this.parentElement.innerHTML='<span style=\'font-size:3.5em\'>🍴</span>'">
+                {% else %}<span style="font-size:3.5em">🍴</span>{% endif %}
+            </div>
+            <div class="card-body">
+                <div class="card-cat">{{ item.category.icon }}
+                    <span data-uz="{{ item.category.name }}"
+                          data-ru="{{ item.category.name_ru|default:item.category.name }}"
+                          data-kz="{{ item.category.name_kz|default:item.category.name }}"
+                          data-en="{{ item.category.name_en|default:item.category.name }}"
+                          data-tr="{{ item.category.name_tr|default:item.category.name }}"
+                          data-ar="{{ item.category.name_ar|default:item.category.name }}"
+                          data-ko="{{ item.category.name_ko|default:item.category.name }}"
+                          data-zh="{{ item.category.name_zh|default:item.category.name }}">{{ item.category.name }}</span>
+                </div>
+                <div class="card-name"
+                    data-uz="{{ item.name }}"
+                    data-ru="{{ item.name_ru|default:item.name }}"
+                    data-kz="{{ item.name_kz|default:item.name }}"
+                    data-en="{{ item.name_en|default:item.name }}"
+                    data-tr="{{ item.name_tr|default:item.name }}"
+                    data-ar="{{ item.name_ar|default:item.name }}"
+                    data-ko="{{ item.name_ko|default:item.name }}"
+                    data-zh="{{ item.name_zh|default:item.name }}">{{ item.name }}</div>
+                <div class="card-desc"
+                    data-uz="{{ item.description|default:''|truncatechars:80 }}"
+                    data-ru="{{ item.description_ru|default:item.description|truncatechars:80 }}"
+                    data-kz="{{ item.description_kz|default:item.description|truncatechars:80 }}"
+                    data-en="{{ item.description_en|default:item.description|truncatechars:80 }}"
+                    data-tr="{{ item.description_tr|default:item.description|truncatechars:80 }}"
+                    data-ar="{{ item.description_ar|default:item.description|truncatechars:80 }}"
+                    data-ko="{{ item.description_ko|default:item.description|truncatechars:80 }}"
+                    data-zh="{{ item.description_zh|default:item.description|truncatechars:80 }}">{{ item.description|default:''|truncatechars:80 }}</div>
+                <div class="card-footer">
+                    <span class="price">{{ item.price }} <span data-i18n="currency">so'm</span></span>
+                    <button class="add-btn"
+                        onclick="addToCart({{ item.id }},'{{ item.name|escapejs }}',{{ item.price }})"
+                        data-i18n="add_btn">+ Qo'sh</button>
+                </div>
+                <div style="margin-top:8px;font-size:0.78em;color:var(--text3);
+                    display:flex;align-items:center;gap:4px;">
+                    🚚 <span data-i18n="delivery_fee_note">Yetkazib berish: 5 000 so'm</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-msg">
+            <span>🍽️</span>
+            <p data-i18n="menu_empty">Menyu bo'sh. Admin paneldan ovqat qo'shing!</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let activeCat = 'all';
+    function setCat(id, btn) {
+        activeCat = id;
+        document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filterMenu();
+    }
+    function filterMenu() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        let found = 0;
+        document.querySelectorAll('#menuGrid .menu-card').forEach(card => {
+            const catMatch = activeCat === 'all' || card.dataset.cat === activeCat;
+            const nameMatch = card.dataset.name.includes(q);
+            card.style.display = (catMatch && nameMatch) ? '' : 'none';
+            if (catMatch && nameMatch) found++;
+        });
+        const de = document.getElementById('dynamicEmpty');
+        if (found === 0) {
+            if (!de) {
+                const div = document.createElement('div');
+                div.className = 'empty-msg'; div.id = 'dynamicEmpty';
+                div.innerHTML = '<span>🔍</span><p>' + t('not_found') + '</p>';
+                document.getElementById('menuGrid').appendChild(div);
+            }
+        } else if (de) { de.remove(); }
+    }
+    const urlCat = new URLSearchParams(window.location.search).get('cat');
+    if (urlCat) {
+        document.querySelectorAll('.cat-tab').forEach(btn => {
+            if (btn.getAttribute('onclick') && btn.getAttribute('onclick').includes("'"+urlCat+"'")) {
+                btn.click();
+            }
+        });
+    }
+</script>
+{% endblock %}

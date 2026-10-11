@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}✅ Zakaz #{{ order.id }} - Lazzat Restaurant{% endblock %}
+
+{% block extra_css %}
+<style>
+    .success-page { max-width:600px; margin:50px auto; padding:20px; }
+    .success-card {
+        background:white; border-radius:24px; padding:40px;
+        box-shadow:0 10px 40px rgba(0,0,0,.12); text-align:center;
+    }
+    .big-icon { font-size:5em; animation:bounce 1.5s ease infinite alternate; }
+    @keyframes bounce { from{transform:translateY(0)} to{transform:translateY(-12px)} }
+    .success-card h1 { font-size:2em; font-weight:900; margin:20px 0 8px; color:#1a1a2e; }
+    .success-card .sub { color:#888; margin-bottom:30px; font-size:1.05em; }
+
+    .status-stepper {
+        display:flex; justify-content:space-between; margin:30px 0;
+        position:relative;
+    }
+    .status-stepper::before {
+        content:''; position:absolute; top:18px; left:10%; right:10%;
+        height:3px; background:#e0e0e0; z-index:0;
+    }
+    .step { flex:1; text-align:center; position:relative; z-index:1; }
+    .step-dot {
+        width:36px; height:36px; border-radius:50%; background:#e0e0e0;
+        display:flex; align-items:center; justify-content:center;
+        margin:0 auto 8px; font-size:1em; transition:all .3s;
+    }
+    .step.done .step-dot { background:#ff6b35; color:white; }
+    .step.active .step-dot { background:#ff6b35; color:white; box-shadow:0 0 0 6px rgba(255,107,53,.2); }
+    .step-label { font-size:.75em; color:#888; font-weight:600; }
+    .step.done .step-label, .step.active .step-label { color:#ff6b35; }
+
+    .order-details {
+        background:#f9f9f9; border-radius:16px; padding:24px; text-align:left; margin:24px 0;
+    }
+    .order-details h3 { font-size:1em; font-weight:800; color:#1a1a2e; margin-bottom:16px; }
+    .detail-row {
+        display:flex; justify-content:space-between; padding:8px 0;
+        border-bottom:1px solid #eee; font-size:.92em;
+    }
+    .detail-row:last-child { border-bottom:none; }
+    .detail-row .label { color:#888; }
+    .detail-row .val { font-weight:700; }
+    .items-list { margin-top:16px; }
+    .order-item { display:flex; justify-content:space-between; padding:7px 0; font-size:.9em; color:#555; border-bottom:1px dashed #e8e8e8; }
+    .order-item:last-child { border-bottom:none; }
+    .total-line { display:flex; justify-content:space-between; padding-top:12px; font-size:1.15em; font-weight:900; color:#ff6b35; }
+
+    .btn-row { display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; }
+    .btn-row a, .btn-row button {
+        flex:1; padding:14px; border-radius:14px; font-size:1em;
+        font-weight:700; cursor:pointer; text-align:center; border:none; transition:all .2s;
+    }
+    .btn-primary { background:linear-gradient(135deg,#ff6b35,#f7931e); color:white; }
+    .btn-secondary { background:#f0f0f0; color:#333; }
+    .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(255,107,53,.35); }
+    .btn-secondary:hover { background:#e0e0e0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="success-page">
+    <div class="success-card">
+        <div class="big-icon">✅</div>
+        <h1>Zakaz qabul qilindi!</h1>
+        <p class="sub">Zakaz raqami: <strong style="color:#ff6b35;">#{{ order.id }}</strong></p>
+
+        <!-- Status stepper -->
+        <div class="status-stepper">
+            <div class="step {% if order.status in 'pending confirmed preparing delivered' %}done{% endif %}">
+                <div class="step-dot">⏳</div>
+                <div class="step-label">Qabul</div>
+            </div>
+            <div class="step {% if order.status in 'confirmed preparing delivered' %}done{% elif order.status == 'pending' %}active{% endif %}">
+                <div class="step-dot">✅</div>
+                <div class="step-label">Tasdiqlandi</div>
+            </div>
+            <div class="step {% if order.status in 'preparing delivered' %}done{% elif order.status == 'confirmed' %}active{% endif %}">
+                <div class="step-dot">👨‍🍳</div>
+                <div class="step-label">Tayyorlanmoqda</div>
+            </div>
+            <div class="step {% if order.status == 'delivered' %}done{% elif order.status == 'preparing' %}active{% endif %}">
+                <div class="step-dot">🚀</div>
+                <div class="step-label">Yetkazildi</div>
+            </div>
+        </div>
+
+        <!-- Details -->
+        <div class="order-details">
+            <h3>📋 Zakaz ma'lumotlari</h3>
+            <div class="detail-row"><span class="label">Mijoz</span><span class="val">{{ order.customer_name }}</span></div>
+            <div class="detail-row"><span class="label">Telefon</span><span class="val">{{ order.customer_phone }}</span></div>
+            <div class="detail-row"><span class="label">Manzil</span><span class="val">{{ order.customer_address }}</span></div>
+            {% if order.note %}
+            <div class="detail-row"><span class="label">Izoh</span><span class="val">{{ order.note }}</span></div>
+            {% endif %}
+            <div class="detail-row"><span class="label">Holat</span><span class="val" style="color:#ff6b35;">{{ order.get_status_display }}</span></div>
+            <div class="detail-row"><span class="label">Vaqt</span><span class="val">{{ order.created_at|date:"d.m.Y H:i" }}</span></div>
+
+            <div class="items-list">
+                <h3 style="margin-bottom:10px;">🍴 Buyurtma tarkibi</h3>
+                {% for item in order.items.all %}
+                <div class="order-item">
+                    <span>{{ item.menu_item.name }} × {{ item.quantity }}</span>
+                    <span>{{ item.subtotal }} so'm</span>
+                </div>
+                {% endfor %}
+                <div class="total-line">
+                    <span>Yetkazib berish</span>
+                    <span>5 000 so'm</span>
+                </div>
+                <div class="total-line" style="font-size:1.3em;border-top:2px solid #eee;padding-top:12px;margin-top:4px;">
+                    <span>Jami to'lov</span>
+                    <span>{{ order.total_price }} so'm</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <a href="/" class="btn-primary">🏠 Bosh sahifa</a>
+            <a href="/tracking/{{ order.id }}/" class="btn-primary" style="background:linear-gradient(135deg,#10b981,#059669);">
+                📍 Zakazni kuzatish
+            </a>
+            <a href="/menu/" class="btn-secondary">🍔 Menyu</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

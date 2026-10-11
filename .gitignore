@@ -1,0 +1,24 @@
+# Django
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+db.sqlite3
+*.sqlite3
+
+# Environment
+.env
+*.env
+
+# Kiro
+.kiro/
+
+# Static
+staticfiles/
+media/
+
+# Virtual env
+venv/
+env/
+.venv/

@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="uz" data-theme="light" data-lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Lazzat Restaurant{% endblock %}</title>
+    <style>
+        /* ── CSS VARIABLES (LIGHT / DARK) ── */
+        :root {
+            --bg:        #ffffff;
+            --bg2:       #ffffff;
+            --bg3:       #f0f0f0;
+            --text:      #333333;
+            --text2:     #666666;
+            --text3:     #999999;
+            --border:    #e0e0e0;
+            --nav-bg:    #1a1a2e;
+            --nav-text:  #cccccc;
+            --card-bg:   #ffffff;
+            --card-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            --input-bg:  #ffffff;
+            --footer-bg: #1a1a2e;
+            --overlay:   rgba(0,0,0,0.55);
+            --orange:    #ff6b35;
+        }
+        [data-theme="dark"] {
+            --bg:        #0f0f1a;
+            --bg2:       #1a1a2e;
+            --bg3:       #252540;
+            --text:      #e8e8e8;
+            --text2:     #aaaaaa;
+            --text3:     #777777;
+            --border:    #333355;
+            --nav-bg:    #0a0a14;
+            --nav-text:  #aaaaaa;
+            --card-bg:   #1a1a2e;
+            --card-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            --input-bg:  #252540;
+            --footer-bg: #0a0a14;
+            --overlay:   rgba(0,0,0,0.75);
+            --orange:    #ff6b35;
+        }
+
+        /* ── RESET ── */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { transition: background 0.3s, color 0.3s; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            transition: background 0.3s, color 0.3s;
+        }
+        a { text-decoration: none; color: inherit; }
+
+        /* ── NAVBAR ── */
+        nav {
+            background: var(--nav-bg);
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky; top: 0; z-index: 999;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            height: 65px;
+            gap: 12px;
+        }
+        .nav-logo {
+            font-size: 1.4em; font-weight: 900; color: var(--orange);
+            white-space: nowrap;
+        }
+        .nav-logo span { color: white; }
+
+        .nav-links { display: flex; gap: 4px; align-items: center; flex:1; justify-content:center; }
+        .nav-links a {
+            color: var(--nav-text); padding: 8px 14px; border-radius: 8px;
+            font-weight: 500; font-size: 0.9em; transition: all 0.2s; white-space:nowrap;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background: var(--orange); color: white;
+        }
+
+        /* nav-right controls */
+        .nav-right { display: flex; align-items: center; gap: 8px; }
+
+        /* LANG DROPDOWN */
+        .lang-dropdown { position: relative; }
+        .lang-btn {
+            background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.2);
+            color: white; padding: 7px 12px; border-radius: 20px;
+            font-size: 0.85em; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 5px; transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .lang-btn:hover { background: rgba(255,255,255,0.22); }
+        .lang-menu {
+            display: none; position: absolute; top: calc(100% + 8px); right: 0;
+            background: var(--card-bg); border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3); overflow: hidden;
+            min-width: 150px; z-index: 9999;
+            border: 1px solid var(--border);
+        }
+        .lang-menu.open { display: block; }
+        .lang-option {
+            padding: 11px 16px; cursor: pointer; font-size: 0.9em;
+            display: flex; align-items: center; gap: 10px;
+            color: var(--text); transition: background 0.15s;
+        }
+        .lang-option:hover { background: var(--bg3); }
+        .lang-option.active { color: var(--orange); font-weight: 700; }
+
+        /* THEME TOGGLE */
+        .theme-btn {
+            background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.2);
+            color: white; width: 38px; height: 38px; border-radius: 50%;
+            font-size: 1.1em; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .theme-btn:hover { background: var(--orange); border-color: var(--orange); transform: rotate(20deg); }
+
+        /* CART BTN */
+        .cart-nav-btn {
+            background: var(--orange); color: white; border: none;
+            padding: 9px 18px; border-radius: 25px; font-size: 0.9em;
+            font-weight: 700; cursor: pointer; transition: all 0.2s; white-space:nowrap;
+        }
+        .cart-nav-btn:hover { background: #e85a25; transform: scale(1.05); }
+        .cart-badge {
+            background: white; color: var(--orange); border-radius: 50%;
+            padding: 1px 6px; font-size: 0.78em; font-weight: 900; margin-left: 4px;
+        }
+
+        /* hamburger */
+        .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; flex-shrink:0; }
+        .hamburger span { width:24px; height:3px; background:white; border-radius:3px; transition:all 0.3s; }
+
+        /* ── FOOTER ── */
+        footer {
+            background: var(--footer-bg); color: var(--text3);
+            text-align: center; padding: 30px 20px; margin-top: 60px;
+        }
+        footer .foot-links { display:flex; justify-content:center; gap:20px; margin-bottom:12px; flex-wrap:wrap; }
+        footer .foot-links a { color: var(--orange); transition: opacity 0.2s; }
+        footer .foot-links a:hover { opacity: 0.7; }
+
+        /* ── TOAST ── */
+        #toast {
+            position: fixed; bottom: 30px; right: 30px; z-index: 9999;
+            background: var(--nav-bg); color: white; padding: 14px 22px;
+            border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            transform: translateY(100px); opacity: 0;
+            transition: all 0.4s; font-size: 0.95em; pointer-events: none;
+            border-left: 4px solid var(--orange);
+        }
+        #toast.show { transform: translateY(0); opacity: 1; }
+
+        /* ── UTILS ── */
+        .btn-orange {
+            display: inline-block; background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white; border: none; padding: 14px 32px; border-radius: 30px;
+            font-size: 1em; font-weight: 700; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-orange:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(255,107,53,0.4); }
+        .section-title { font-size: 1.8em; font-weight: 800; margin-bottom: 6px; color: var(--text); }
+        .section-sub { color: var(--text3); margin-bottom: 35px; }
+
+        /* ── CART SIDEBAR ── */
+        #cartSidebar {
+            background: var(--card-bg) !important;
+        }
+        #cartSidebar input, #cartSidebar textarea {
+            background: var(--input-bg);
+            color: var(--text);
+            border-color: var(--border);
+        }
+        #cartSidebar label { color: var(--text2) !important; }
+        #cartSidebar .back-btn {
+            background: var(--bg3) !important; color: var(--text) !important;
+        }
+        #cartSidebar .cart-footer-inner { border-color: var(--border) !important; }
+
+        /* ── MOBILE ── */
+        @media(max-width:768px){
+            nav { padding: 0 16px; }
+            .nav-links {
+                display: none; flex-direction: column; position: absolute;
+                top: 65px; left: 0; right: 0; background: var(--nav-bg);
+                padding: 10px 16px 20px; gap: 4px;
+            }
+            .nav-links.open { display: flex; }
+            .hamburger { display: flex; }
+            .nav-logo { font-size: 1.1em; }
+        }
+        @media(max-width:480px){
+            .cart-nav-btn span:not(.cart-badge) { display:none; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+    <a href="/" class="nav-logo">🍽️ Lazzat<span> Restaurant</span></a>
+
+    <div class="nav-links" id="navLinks">
+        <a href="/" id="navHome"    data-i18n="nav_home">🏠 Bosh sahifa</a>
+        <a href="/menu/" id="navMenu"  data-i18n="nav_menu">🍔 Menyu</a>
+        <a href="/about/" id="navAbout" data-i18n="nav_about">ℹ️ Biz haqimizda</a>
+        <a href="/contact/" id="navContact" data-i18n="nav_contact">📞 Kontakt</a>
+    </div>
+
+    <div class="nav-right">
+        <!-- LANGUAGE DROPDOWN -->
+        <div class="lang-dropdown" id="langDropdown">
+            <button class="lang-btn" onclick="toggleLang()" id="langBtnLabel">
+                🌐 <span id="currentLang">UZ</span> ▾
+            </button>
+            <div class="lang-menu" id="langMenu">
+                <div class="lang-option" onclick="setLang('uz')">🇺🇿 O'zbekcha</div>
+                <div class="lang-option" onclick="setLang('ru')">🇷🇺 Русский</div>
+                <div class="lang-option" onclick="setLang('kz')">🇰🇿 Қазақша</div>
+                <div class="lang-option" onclick="setLang('en')">🇬🇧 English</div>
+                <div class="lang-option" onclick="setLang('tr')">🇹🇷 Türkçe</div>
+                <div class="lang-option" onclick="setLang('ar')">🇸🇦 العربية</div>
+                <div class="lang-option" onclick="setLang('ko')">🇰🇷 한국어</div>
+                <div class="lang-option" onclick="setLang('zh')">🇨🇳 中文</div>
+            </div>
+        </div>
+
+        <!-- LOGIN / USER -->
+        {% if user.is_authenticated %}
+        <div class="lang-dropdown" id="userDropdown">
+            <button class="lang-btn" onclick="toggleUserMenu()" style="gap:6px;">
+                👤 <span>{{ user.first_name|default:user.username|truncatechars:10 }}</span> ▾
+            </button>
+            <div class="lang-menu" id="userMenu">
+                <div class="lang-option" style="color:var(--text3);font-size:.8em;pointer-events:none;">
+                    {{ user.email }}
+                </div>
+                <a href="#" onclick="saveLangAndGo('/logout/')" class="lang-option" style="color:#e53e3e;">🚪 Chiqish</a>
+            </div>
+        </div>
+        {% else %}
+        <a href="/login/" class="lang-btn" style="text-decoration:none;">🔐 Kirish</a>
+        {% endif %}
+
+        <!-- DARK / LIGHT TOGGLE -->
+        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="Rejim">🌙</button>
+
+        <!-- CART -->
+        <button class="cart-nav-btn" onclick="openCart()">
+            🛒 <span data-i18n="cart">Savat</span>
+            <span class="cart-badge" id="cartCount">0</span>
+        </button>
+
+        <!-- HAMBURGER -->
+        <div class="hamburger" onclick="toggleMenu()">
+            <span></span><span></span><span></span>
+        </div>
+    </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<!-- FOOTER -->
+<footer>
+    <div class="foot-links">
+        <a href="/" data-i18n="nav_home">🏠 Bosh sahifa</a>
+        <a href="/menu/" data-i18n="nav_menu">🍔 Menyu</a>
+        <a href="/about/" data-i18n="nav_about">ℹ️ Biz haqimizda</a>
+        <a href="/contact/" data-i18n="nav_contact">📞 Kontakt</a>
+        <a href="/admin/">🔑 Admin</a>
+    </div>
+    <p>© 2026 Lazzat Restaurant. <span data-i18n="rights">Barcha huquqlar himoyalangan.</span></p>
+</footer>
+
+<!-- CART OVERLAY -->
+<div id="overlay" onclick="closeCart()" style="
+    position:fixed;inset:0;background:var(--overlay);
+    z-index:1000;display:none;"></div>
+
+<!-- CART SIDEBAR -->
+<div id="cartSidebar" style="
+    position:fixed;right:-460px;top:0;width:460px;max-width:100vw;
+    height:100%;z-index:1001;
+    display:flex;flex-direction:column;
+    transition:right 0.35s cubic-bezier(.4,0,.2,1);
+    box-shadow:-15px 0 40px rgba(0,0,0,.25);">
+
+    <!-- Cart header -->
+    <div style="background:linear-gradient(135deg,#ff6b35,#f7931e);color:white;
+        padding:20px 24px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+        <h2 style="font-size:1.4em;">🛒 <span data-i18n="cart">Savat</span></h2>
+        <button onclick="closeCart()" style="background:rgba(255,255,255,.25);border:none;
+            color:white;font-size:1.4em;width:36px;height:36px;border-radius:50%;cursor:pointer;">✕</button>
+    </div>
+
+    <!-- Cart body -->
+    <div id="cartBody" style="flex:1;overflow-y:auto;padding:20px;"></div>
+
+    <!-- Cart footer -->
+    <div style="padding:20px;border-top:2px solid var(--border);" class="cart-footer-inner">
+        <div style="display:flex;justify-content:space-between;font-size:1.25em;font-weight:800;margin-bottom:15px;">
+            <span data-i18n="total">Jami:</span>
+            <span id="cartTotal" style="color:#ff6b35;">0 so'm</span>
+        </div>
+        <!-- Yetkazib berish narxi -->
+        <div id="deliveryRow" style="display:none;justify-content:space-between;
+            font-size:0.92em;color:var(--text2);margin-bottom:10px;
+            padding:8px 12px;background:var(--bg3);border-radius:8px;">
+            <span>🚚 <span data-i18n="delivery_fee">Yetkazib berish:</span></span>
+            <span style="font-weight:700;color:#ff6b35;">5 000 so'm</span>
+        </div>
+
+        <!-- Step 1 -->
+        <div id="cartStep1">
+            <button id="btnCheckout" class="btn-orange" style="width:100%;padding:15px;"
+                onclick="goCheckout()" disabled data-i18n="order_btn">Zakaz berish →</button>
+        </div>
+
+        <!-- Step 2: form -->
+        <div id="cartStep2" style="display:none;">
+            <button onclick="backToCart()" class="back-btn" style="
+                width:100%;padding:11px;border-radius:12px;font-size:1em;
+                cursor:pointer;margin-bottom:12px;border:none;">
+                ← <span data-i18n="back">Orqaga</span>
+            </button>
+
+            <div style="margin-bottom:10px;">
+                <label style="font-weight:700;font-size:.88em;display:block;margin-bottom:5px;"
+                    data-i18n="name_label">Ismingiz *</label>
+                <input id="fName" type="text" data-i18n-ph="name_ph"
+                    placeholder="Ism Familiya"
+                    style="width:100%;padding:11px;border:2px solid var(--border);
+                    border-radius:10px;font-size:1em;outline:none;background:var(--input-bg);color:var(--text);">
+            </div>
+            <div style="margin-bottom:10px;">
+                <label style="font-weight:700;font-size:.88em;display:block;margin-bottom:5px;"
+                    data-i18n="phone_label">Telefon *</label>
+                <input id="fPhone" type="tel" placeholder="+998 90 123 45 67"
+                    style="width:100%;padding:11px;border:2px solid var(--border);
+                    border-radius:10px;font-size:1em;outline:none;background:var(--input-bg);color:var(--text);">
+            </div>
+            <div style="margin-bottom:10px;">
+                <label style="font-weight:700;font-size:.88em;display:block;margin-bottom:5px;"
+                    data-i18n="address_label">Manzil *</label>
+                <input id="fAddress" type="text" data-i18n-ph="address_ph"
+                    placeholder="Ko'cha, uy raqami"
+                    style="width:100%;padding:11px;border:2px solid var(--border);
+                    border-radius:10px;font-size:1em;outline:none;background:var(--input-bg);color:var(--text);">
+            </div>
+            <div style="margin-bottom:14px;">
+                <label style="font-weight:700;font-size:.88em;display:block;margin-bottom:5px;"
+                    data-i18n="note_label">Izoh</label>
+                <textarea id="fNote" rows="2" data-i18n-ph="note_ph"
+                    placeholder="Qo'shimcha xohish..."
+                    style="width:100%;padding:11px;border:2px solid var(--border);
+                    border-radius:10px;font-size:1em;outline:none;resize:none;
+                    background:var(--input-bg);color:var(--text);"></textarea>
+            </div>
+            <button class="btn-orange" style="width:100%;padding:15px;"
+                onclick="submitOrder()" data-i18n="submit_btn">✅ Zakaz yuborish</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!--  GLOBAL JS: i18n + theme + cart                        -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<script>
+// ── TRANSLATIONS ─────────────────────────────────────────────
+const LANGS = {
+    uz: {
+        // Nav
+        nav_home:'🏠 Bosh sahifa', nav_menu:'🍔 Menyu',
+        nav_about:"ℹ️ Biz haqimizda", nav_contact:'📞 Kontakt',
+        // Cart
+        cart:"Savat", total:'Jami:', order_btn:'Zakaz berish →',
+        back:'Orqaga', name_label:'Ismingiz *', name_ph:'Ism Familiya',
+        phone_label:'Telefon *', address_label:'Manzil *',
+        address_ph:"Ko'cha, uy raqami", note_label:'Izoh',
+        note_ph:"Qo'shimcha xohish...", submit_btn:'✅ Zakaz yuborish',
+        delivery_fee:"Yetkazib berish:", delivery_fee_note:"🚚 Yetkazib berish: 5 000 so'm",
+        cart_empty:"Savat bo'sh", toast_added:"savatga qo'shildi!",
+        toast_err:'Ism, telefon va manzilni kiriting!',
+        toast_conn:'Ulanishda xato. Qayta urining.',
+        rights:'Barcha huquqlar himoyalangan.', lang_label:'UZ',
+        currency:"so'm",
+        // Home
+        hero_title:"Eng Mazali Ovqatlar Bir Joyda 🍽️",
+        hero_title_span:'Mazali',
+        hero_sub:"Toza mahsulotlar, tajribali oshpazlar va tez yetkazib berish. Uyingizdan chiqmay buyurtma bering!",
+        see_menu:"🍔 Menyuni ko'rish",
+        stat_clients:'Baxtli mijoz', stat_delivery:'Daqiqada yetkazish',
+        stat_dishes:'Taom turi', stat_rating:'Reyting',
+        categories:'Kategoriyalar', find_what_you_want:'Xohlaganingizni toping',
+        dishes_count:'ta taom', popular:'⭐ Mashhur Taomlar',
+        popular_sub:"Mijozlar eng ko'p buyurtma beradi",
+        add_btn:"+ Qo'sh", see_all_menu:"Butun menyuni ko'rish →",
+        why_us:'Nega biz?', why_us_sub:'Biz siz uchun eng yaxshisini taklif qilamiz',
+        why1_title:'Tez yetkazish', why1_text:'30 daqiqada eshigingizga yetkazib beramiz',
+        why2_title:'Toza mahsulot', why2_text:'Faqat yangi va sifatli mahsulotlardan foydalanamiz',
+        why3_title:'Tajribali oshpaz', why3_text:'10 yillik tajribaga ega professional oshpazlarimiz',
+        why4_title:'Qulay narx', why4_text:"Sifatni qurbonlik qilmasdan arzon narxlarda",
+        // Menu
+        menu_title:'🍔 Bizning Menyu', menu_sub:'ta mazali taom sizni kutmoqda',
+        search_ph:'🔍 Ovqat nomini qidiring...', all:'🍽️ Hammasi',
+        menu_empty:"Menyu bo'sh. Admin paneldan ovqat qo'shing!",
+        not_found:'Hech narsa topilmadi',
+        // About
+        about_title:'ℹ️ Biz Haqimizda',
+        about_sub:"2015-yildan beri mazali ovqatlar taqdim etib kelmoqdamiz",
+        our_story:'Bizning Hikoyamiz',
+        story_p1:"Lazzat Restaurant 2015-yilda kichik bir oilaviy restoran sifatida ochildi.",
+        story_p2:"Yillar davomida biz o'sdik, lekin asosiy qoidamiz o'zgarmadi: toza mahsulot, sevgi bilan pishirilgan ovqat va iliq xizmat.",
+        story_p3:"Bugun bizda 90+ ta taom va 500+ doimiy mijoz bor.",
+        our_team:'👨‍🍳 Bizning Jamoa', team_sub:'Har kuni siz uchun mehnat qiladi',
+        role_chef:'Bosh Oshpaz', role_soup:"Sho'rva Ustasi",
+        role_pastry:'Konditer', role_delivery:'Kuryer',
+        our_values:'Bizning Qadriyatlar', values_sub:"Nima uchun 500+ mijoz bizni tanladi",
+        val1_title:'Yangi mahsulot', val1_text:'Har kuni yangi va toza mahsulotlar bilan ishlaymiz',
+        val2_title:'Sevgi bilan', val2_text:'Har bir taomni qalbimiz bilan tayyorlaymiz',
+        val3_title:'Tezlik', val3_text:'30 daqiqada yetkazib berishga kafolat beramiz',
+        val4_title:'Sifat', val4_text:'Eng yuqori sifat nazorati',
+        // Contact
+        contact_title:"📞 Biz bilan bog'laning",
+        contact_sub:'Savollaringiz bormi? Biz har doim yordam berishga tayyormiz!',
+        address_val:"Toshkent sh., Chilonzor tumani, Bunyodkor ko'chasi 12-uy",
+        work_hours:'⏰ Ish vaqti', weekdays:'Dushanba – Juma',
+        saturday:'Shanba', sunday:'Yakshanba',
+        send_msg:'✉️ Xabar yuborish', reply_time:'24 soat ichida javob beramiz',
+        your_name:'Ismingiz *', subject:'Mavzu',
+        subj_order:'📦 Zakaz haqida', subj_quality:'⭐ Sifat haqida',
+        subj_delivery:'🚚 Yetkazish haqida', subj_other:'💬 Boshqa',
+        your_msg:'Xabaringiz *', msg_ph:'Xabaringizni yozing...',
+        send_btn:'📨 Xabar yuborish',
+        msg_sent:'✅ Xabaringiz qabul qilindi! Tez orada javob beramiz.',
+    },
+    ru: {
+        nav_home:'🏠 Главная', nav_menu:'🍔 Меню',
+        nav_about:'ℹ️ О нас', nav_contact:'📞 Контакты',
+        cart:'Корзина', total:'Итого:', order_btn:'Оформить заказ →',
+        back:'Назад', name_label:'Ваше имя *', name_ph:'Имя Фамилия',
+        phone_label:'Телефон *', address_label:'Адрес *',
+        address_ph:'Улица, номер дома', note_label:'Примечание',
+        note_ph:'Дополнительные пожелания...', submit_btn:'✅ Отправить заказ',
+        delivery_fee:"Доставка:", delivery_fee_note:"🚚 Доставка: 5 000 сум",
+        cart_empty:'Корзина пуста', toast_added:'добавлено в корзину!',
+        toast_err:'Введите имя, телефон и адрес!',
+        toast_conn:'Ошибка соединения. Попробуйте снова.',
+        rights:'Все права защищены.', lang_label:'RU',
+        currency:'сум',
+        // Home
+        hero_title:'Лучшие Блюда В Одном Месте 🍽️',
+        hero_title_span:'Лучшие',
+        hero_sub:'Свежие продукты, опытные повара и быстрая доставка. Заказывайте не выходя из дома!',
+        see_menu:'🍔 Смотреть меню',
+        stat_clients:'Довольных клиентов', stat_delivery:'Минут доставка',
+        stat_dishes:'Видов блюд', stat_rating:'Рейтинг',
+        categories:'Категории', find_what_you_want:'Найдите то, что хотите',
+        dishes_count:'блюд', popular:'⭐ Популярные блюда',
+        popular_sub:'Клиенты заказывают чаще всего',
+        add_btn:'+ Добавить', see_all_menu:'Смотреть всё меню →',
+        why_us:'Почему мы?', why_us_sub:'Мы предлагаем лучшее для вас',
+        why1_title:'Быстрая доставка', why1_text:'Доставим к вашей двери за 30 минут',
+        why2_title:'Свежие продукты', why2_text:'Используем только свежие и качественные продукты',
+        why3_title:'Опытные повара', why3_text:'Профессиональные повара с 10-летним опытом',
+        why4_title:'Доступные цены', why4_text:'Доступные цены без ущерба для качества',
+        // Menu
+        menu_title:'🍔 Наше Меню', menu_sub:'вкусных блюд ждут вас',
+        search_ph:'🔍 Поиск блюда...', all:'🍽️ Все',
+        menu_empty:'Меню пусто. Добавьте блюда через панель администратора!',
+        not_found:'Ничего не найдено',
+        // About
+        about_title:'ℹ️ О Нас',
+        about_sub:'С 2015 года подаём вкусные блюда',
+        our_story:'Наша История',
+        story_p1:'Lazzat Restaurant открылся в 2015 году как небольшой семейный ресторан.',
+        story_p2:'За годы мы выросли, но главный принцип не изменился: свежие продукты, еда с любовью и тёплый сервис.',
+        story_p3:'Сегодня у нас 90+ блюд и 500+ постоянных клиентов.',
+        our_team:'👨‍🍳 Наша Команда', team_sub:'Трудятся для вас каждый день',
+        role_chef:'Шеф-повар', role_soup:'Мастер супов',
+        role_pastry:'Кондитер', role_delivery:'Курьер',
+        our_values:'Наши Ценности', values_sub:'Почему 500+ клиентов выбирают нас',
+        val1_title:'Свежие продукты', val1_text:'Каждый день работаем со свежими продуктами',
+        val2_title:'С любовью', val2_text:'Готовим каждое блюдо с душой',
+        val3_title:'Скорость', val3_text:'Гарантируем доставку за 30 минут',
+        val4_title:'Качество', val4_text:'Высший контроль качества',
+        // Contact
+        contact_title:'📞 Свяжитесь с нами',
+        contact_sub:'Есть вопросы? Мы всегда готовы помочь!',
+        address_val:'г. Ташкент, Чиланзарский район, ул. Бунёдкор, дом 12',
+        work_hours:'⏰ Часы работы', weekdays:'Понедельник – Пятница',
+        saturday:'Суббота', sunday:'Воскресенье',
+        send_msg:'✉️ Отправить сообщение', reply_time:'Ответим в течение 24 часов',
+        your_name:'Ваше имя *', subject:'Тема',
+        subj_order:'📦 О заказе', subj_quality:'⭐ О качестве',
+        subj_delivery:'🚚 О доставке', subj_other:'💬 Другое',
+        your_msg:'Ваше сообщение *', msg_ph:'Напишите ваше сообщение...',
+        send_btn:'📨 Отправить', address_label:'Адрес',
+        phone_label:'Телефон',
+        msg_sent:'✅ Ваше сообщение принято! Скоро ответим.',
+    },
+    kz: {
+        nav_home:'🏠 Басты бет', nav_menu:'🍔 Мәзір',
+        nav_about:'ℹ️ Біз туралы', nav_contact:'📞 Байланыс',
+        cart:'Себет', total:'Барлығы:', order_btn:'Тапсырыс беру →',
+        back:'Артқа', name_label:'Атыңыз *', name_ph:'Аты-жөні',
+        phone_label:'Телефон *', address_label:'Мекенжай *',
+        address_ph:'Көше, үй нөмірі', note_label:'Ескерту',
+        note_ph:'Қосымша тілектер...', submit_btn:'✅ Тапсырыс жіберу',
+        delivery_fee:"Жеткізу:", delivery_fee_note:"🚚 Жеткізу: 5 000 теңге",
+        cart_empty:'Себет бос', toast_added:'себетке қосылды!',
+        toast_err:'Аты, телефон және мекенжайды енгізіңіз!',
+        toast_conn:'Байланыс қатесі. Қайталап көріңіз.',
+        rights:'Барлық құқықтар қорғалған.', lang_label:'ҚЗ',
+        currency:'теңге',
+        // Home
+        hero_title:'Ең Дәмді Тағамдар Бір Жерде 🍽️',
+        hero_title_span:'Дәмді',
+        hero_sub:'Таза өнімдер, тәжірибелі аспаздар және жылдам жеткізу. Үйден шықпай тапсырыс беріңіз!',
+        see_menu:'🍔 Мәзірді көру',
+        stat_clients:'Бақытты клиент', stat_delivery:'Минутта жеткізу',
+        stat_dishes:'Тағам түрі', stat_rating:'Рейтинг',
+        categories:'Санаттар', find_what_you_want:'Қалағаныңызды табыңыз',
+        dishes_count:'тағам', popular:'⭐ Танымал тағамдар',
+        popular_sub:'Клиенттер ең көп тапсырыс береді',
+        add_btn:'+ Қосу', see_all_menu:'Барлық мәзірді көру →',
+        why_us:'Неге біз?', why_us_sub:'Сіз үшін ең жақсысын ұсынамыз',
+        why1_title:'Жылдам жеткізу', why1_text:'30 минутта есігіңізге жеткіземіз',
+        why2_title:'Таза өнім', why2_text:'Тек жаңа және сапалы өнімдерді қолданамыз',
+        why3_title:'Тәжірибелі аспаз', why3_text:'10 жылдық тәжірибесі бар кәсіби аспаздар',
+        why4_title:'Қолжетімді баға', why4_text:'Сапаны құрбан етпей арзан бағада',
+        // Menu
+        menu_title:'🍔 Біздің Мәзір', menu_sub:'дәмді тағам сізді күтуде',
+        search_ph:'🔍 Тағам атын іздеңіз...', all:'🍽️ Барлығы',
+        menu_empty:'Мәзір бос. Әкімші панелінен тағам қосыңыз!',
+        not_found:'Ештеңе табылмады',
+        // About
+        about_title:'ℹ️ Біз туралы',
+        about_sub:'2015 жылдан бері дәмді тағамдар ұсынып келеміз',
+        our_story:'Біздің Тарихымыз',
+        story_p1:'Lazzat Restaurant 2015 жылы шағын отбасылық мейрамхана ретінде ашылды.',
+        story_p2:'Жылдар өткен сайын өстік, бірақ негізгі қағидамыз өзгерген жоқ: таза өнім, сүйіспеншілікпен дайындалған тағам.',
+        story_p3:'Бүгін бізде 90+ тағам және 500+ тұрақты клиент бар.',
+        our_team:'👨‍🍳 Біздің Ұжым', team_sub:'Күн сайын сіз үшін еңбек етеді',
+        role_chef:'Бас аспаз', role_soup:'Сорпа шебері',
+        role_pastry:'Кондитер', role_delivery:'Курьер',
+        our_values:'Біздің Құндылықтар', values_sub:'500+ клиент неге бізді таңдады',
+        val1_title:'Жаңа өнім', val1_text:'Күн сайын жаңа өнімдермен жұмыс жасаймыз',
+        val2_title:'Сүйіспеншілікпен', val2_text:'Әр тағамды жүрекпен дайындаймыз',
+        val3_title:'Жылдамдық', val3_text:'30 минутта жеткізуге кепілдік береміз',
+        val4_title:'Сапа', val4_text:'Ең жоғары сапа бақылауы',
+        // Contact
+        contact_title:'📞 Бізбен байланысыңыз',
+        contact_sub:'Сұрақтарыңыз бар ма? Біз әрқашан көмектесуге дайынбыз!',
+        address_val:'Ташкент қ., Чиланзар ауданы, Бунёдкор көшесі 12-үй',
+        work_hours:'⏰ Жұмыс уақыты', weekdays:'Дүйсенбі – Жұма',
+        saturday:'Сенбі', sunday:'Жексенбі',
+        send_msg:'✉️ Хабар жіберу', reply_time:'24 сағат ішінде жауап береміз',
+        your_name:'Атыңыз *', subject:'Тақырып',
+        subj_order:'📦 Тапсырыс туралы', subj_quality:'⭐ Сапа туралы',
+        subj_delivery:'🚚 Жеткізу туралы', subj_other:'💬 Басқа',
+        your_msg:'Хабарыңыз *', msg_ph:'Хабарыңызды жазыңыз...',
+        send_btn:'📨 Жіберу', address_label:'Мекенжай',
+        phone_label:'Телефон',
+        msg_sent:'✅ Хабарыңыз қабылданды! Жақын арада жауап береміз.',
+    },
+    en: {
+        nav_home:'🏠 Home', nav_menu:'🍔 Menu',
+        nav_about:'ℹ️ About Us', nav_contact:'📞 Contact',
+        cart:'Cart', total:'Total:', order_btn:'Place Order →',
+        back:'Back', name_label:'Your Name *', name_ph:'Full Name',
+        phone_label:'Phone *', address_label:'Address *',
+        address_ph:'Street, house number', note_label:'Note',
+        note_ph:'Additional wishes...', submit_btn:'✅ Place Order',
+        delivery_fee:'Delivery:', delivery_fee_note:'🚚 Delivery: 5 000 UZS',
+        toast_added:'added to cart!', cart_empty:'Cart is empty',
+        toast_err:'Please enter name, phone and address!',
+        toast_conn:'Connection error. Please try again.',
+        rights:'All rights reserved.', lang_label:'EN',
+        currency:' UZS',
+        hero_title:'Best Food In One Place 🍽️', hero_title_span:'Best',
+        hero_sub:'Fresh ingredients, experienced chefs and fast delivery. Order without leaving home!',
+        see_menu:'🍔 View Menu',
+        stat_clients:'Happy Customers', stat_delivery:'Min Delivery',
+        stat_dishes:'Dish Types', stat_rating:'Rating',
+        categories:'Categories', find_what_you_want:'Find what you want',
+        dishes_count:'dishes', popular:'⭐ Popular Dishes',
+        popular_sub:'Most ordered by customers',
+        add_btn:'+ Add', see_all_menu:'View Full Menu →',
+        why_us:'Why Us?', why_us_sub:'We offer the best for you',
+        why1_title:'Fast Delivery', why1_text:'Delivered to your door in 30 minutes',
+        why2_title:'Fresh Products', why2_text:'Only fresh and quality ingredients',
+        why3_title:'Expert Chefs', why3_text:'Professional chefs with 10 years experience',
+        why4_title:'Good Prices', why4_text:'Affordable prices without sacrificing quality',
+        menu_title:'🍔 Our Menu', menu_sub:'delicious dishes waiting for you',
+        search_ph:'🔍 Search dishes...', all:'🍽️ All',
+        menu_empty:'Menu is empty. Add dishes from admin panel!',
+        not_found:'Nothing found',
+        about_title:'ℹ️ About Us', about_sub:'Serving delicious food since 2015',
+        our_story:'Our Story',
+        story_p1:'Lazzat Restaurant opened in 2015 as a small family restaurant.',
+        story_p2:'Over the years we grew, but our main rule stayed the same: fresh products, food made with love.',
+        story_p3:'Today we have 90+ dishes and 500+ regular customers.',
+        our_team:'👨‍🍳 Our Team', team_sub:'Working for you every day',
+        role_chef:'Head Chef', role_soup:'Soup Master',
+        role_pastry:'Pastry Chef', role_delivery:'Courier',
+        our_values:'Our Values', values_sub:'Why 500+ customers choose us',
+        val1_title:'Fresh Products', val1_text:'We work with fresh products every day',
+        val2_title:'With Love', val2_text:'We prepare every dish with heart',
+        val3_title:'Speed', val3_text:'We guarantee delivery in 30 minutes',
+        val4_title:'Quality', val4_text:'Highest quality control',
+        contact_title:'📞 Contact Us', contact_sub:'Have questions? We are always ready to help!',
+        address_val:'Tashkent, Chilanzar district, Bunyodkor str. 12',
+        work_hours:'⏰ Working Hours', weekdays:'Monday – Friday',
+        saturday:'Saturday', sunday:'Sunday',
+        send_msg:'✉️ Send Message', reply_time:'We reply within 24 hours',
+        your_name:'Your Name *', subject:'Subject',
+        subj_order:'📦 About Order', subj_quality:'⭐ About Quality',
+        subj_delivery:'🚚 About Delivery', subj_other:'💬 Other',
+        your_msg:'Your Message *', msg_ph:'Write your message...',
+        send_btn:'📨 Send', address_label:'Address', phone_label:'Phone',
+        msg_sent:'✅ Your message received! We will reply soon.',
+    },
+    tr: {
+        nav_home:'🏠 Ana Sayfa', nav_menu:'🍔 Menü',
+        nav_about:'ℹ️ Hakkımızda', nav_contact:'📞 İletişim',
+        cart:'Sepet', total:'Toplam:', order_btn:'Sipariş Ver →',
+        back:'Geri', name_label:'Adınız *', name_ph:'Ad Soyad',
+        phone_label:'Telefon *', address_label:'Adres *',
+        address_ph:'Sokak, kapı numarası', note_label:'Not',
+        note_ph:'Ek istekler...', submit_btn:'✅ Sipariş Ver',
+        delivery_fee:'Teslimat:', delivery_fee_note:'🚚 Teslimat: 5 000 UZS',
+        toast_added:'sepete eklendi!', cart_empty:'Sepet boş',
+        toast_err:'Ad, telefon ve adres giriniz!',
+        toast_conn:'Bağlantı hatası. Tekrar deneyin.',
+        rights:'Tüm haklar saklıdır.', lang_label:'TR',
+        currency:' UZS',
+        hero_title:'En Lezzetli Yemekler Bir Arada 🍽️', hero_title_span:'Lezzetli',
+        hero_sub:'Taze malzemeler, deneyimli aşçılar ve hızlı teslimat. Evden çıkmadan sipariş verin!',
+        see_menu:'🍔 Menüyü Gör',
+        stat_clients:'Mutlu Müşteri', stat_delivery:'Dk Teslimat',
+        stat_dishes:'Yemek Çeşidi', stat_rating:'Puan',
+        categories:'Kategoriler', find_what_you_want:'İstediğinizi bulun',
+        dishes_count:'yemek', popular:'⭐ Popüler Yemekler',
+        popular_sub:'Müşteriler en çok sipariş verir',
+        add_btn:'+ Ekle', see_all_menu:'Tüm Menüyü Gör →',
+        why_us:'Neden Biz?', why_us_sub:'Sizin için en iyisini sunuyoruz',
+        why1_title:'Hızlı Teslimat', why1_text:'30 dakikada kapınıza teslim ederiz',
+        why2_title:'Taze Ürünler', why2_text:'Sadece taze ve kaliteli malzeme kullanırız',
+        why3_title:'Deneyimli Aşçılar', why3_text:'10 yıllık deneyimli profesyonel aşçılar',
+        why4_title:'Uygun Fiyat', why4_text:'Kaliteden ödün vermeden uygun fiyatlar',
+        menu_title:'🍔 Menümüz', menu_sub:'lezzetli yemek sizi bekliyor',
+        search_ph:'🔍 Yemek ara...', all:'🍽️ Tümü',
+        menu_empty:'Menü boş. Admin panelinden yemek ekleyin!',
+        not_found:'Hiçbir şey bulunamadı',
+        about_title:'ℹ️ Hakkımızda', about_sub:'2015\'ten beri lezzetli yemekler sunuyoruz',
+        our_story:'Hikayemiz',
+        story_p1:'Lazzat Restaurant 2015 yılında küçük bir aile restoranı olarak açıldı.',
+        story_p2:'Yıllar içinde büyüdük ama ana kuralımız değişmedi: taze ürünler, sevgiyle yapılan yemek.',
+        story_p3:'Bugün 90+ yemek ve 500+ düzenli müşterimiz var.',
+        our_team:'👨‍🍳 Ekibimiz', team_sub:'Her gün sizin için çalışır',
+        role_chef:'Baş Aşçı', role_soup:'Çorba Ustası',
+        role_pastry:'Pastacı', role_delivery:'Kurye',
+        our_values:'Değerlerimiz', values_sub:'500+ müşteri neden bizi seçti',
+        val1_title:'Taze Ürün', val1_text:'Her gün taze ürünlerle çalışırız',
+        val2_title:'Sevgiyle', val2_text:'Her yemeği gönülden hazırlarız',
+        val3_title:'Hız', val3_text:'30 dakikada teslimat garantisi',
+        val4_title:'Kalite', val4_text:'En yüksek kalite kontrolü',
+        contact_title:'📞 Bize Ulaşın', contact_sub:'Sorularınız mı var? Her zaman yardıma hazırız!',
+        address_val:'Taşkent, Çilanzer ilçesi, Bunyodkor cad. 12',
+        work_hours:'⏰ Çalışma Saatleri', weekdays:'Pazartesi – Cuma',
+        saturday:'Cumartesi', sunday:'Pazar',
+        send_msg:'✉️ Mesaj Gönder', reply_time:'24 saat içinde yanıt veririz',
+        your_name:'Adınız *', subject:'Konu',
+        subj_order:'📦 Sipariş Hakkında', subj_quality:'⭐ Kalite Hakkında',
+        subj_delivery:'🚚 Teslimat Hakkında', subj_other:'💬 Diğer',
+        your_msg:'Mesajınız *', msg_ph:'Mesajınızı yazın...',
+        send_btn:'📨 Gönder', address_label:'Adres', phone_label:'Telefon',
+        msg_sent:'✅ Mesajınız alındı! Yakında yanıt vereceğiz.',
+    },
+    ar: {
+        nav_home:'🏠 الرئيسية', nav_menu:'🍔 القائمة',
+        nav_about:'ℹ️ من نحن', nav_contact:'📞 اتصل بنا',
+        cart:'السلة', total:'المجموع:', order_btn:'تقديم الطلب →',
+        back:'رجوع', name_label:'اسمك *', name_ph:'الاسم الكامل',
+        phone_label:'الهاتف *', address_label:'العنوان *',
+        address_ph:'الشارع، رقم المنزل', note_label:'ملاحظة',
+        note_ph:'طلبات إضافية...', submit_btn:'✅ تقديم الطلب',
+        delivery_fee:'التوصيل:', delivery_fee_note:'🚚 التوصيل: 5 000 UZS',
+        toast_added:'أضيف إلى السلة!', cart_empty:'السلة فارغة',
+        toast_err:'يرجى إدخال الاسم والهاتف والعنوان!',
+        toast_conn:'خطأ في الاتصال. حاول مجدداً.',
+        rights:'جميع الحقوق محفوظة.', lang_label:'AR',
+        currency:' UZS',
+        hero_title:'أفضل الأطباق في مكان واحد 🍽️', hero_title_span:'أفضل',
+        hero_sub:'مكونات طازجة، طهاة متمرسون وتوصيل سريع. اطلب دون مغادرة المنزل!',
+        see_menu:'🍔 عرض القائمة',
+        stat_clients:'عميل سعيد', stat_delivery:'دقيقة توصيل',
+        stat_dishes:'نوع طبق', stat_rating:'التقييم',
+        categories:'الفئات', find_what_you_want:'ابحث عما تريد',
+        dishes_count:'طبق', popular:'⭐ الأطباق الشعبية',
+        popular_sub:'الأكثر طلباً من العملاء',
+        add_btn:'+ أضف', see_all_menu:'عرض القائمة الكاملة →',
+        why_us:'لماذا نحن؟', why_us_sub:'نقدم لك الأفضل',
+        why1_title:'توصيل سريع', why1_text:'نوصل إلى بابك خلال 30 دقيقة',
+        why2_title:'منتجات طازجة', why2_text:'نستخدم فقط المكونات الطازجة والجيدة',
+        why3_title:'طهاة متمرسون', why3_text:'طهاة محترفون بخبرة 10 سنوات',
+        why4_title:'أسعار معقولة', why4_text:'أسعار مناسبة دون التنازل عن الجودة',
+        menu_title:'🍔 قائمتنا', menu_sub:'طبق لذيذ ينتظرك',
+        search_ph:'🔍 ابحث عن طبق...', all:'🍽️ الكل',
+        menu_empty:'القائمة فارغة. أضف الأطباق من لوحة الإدارة!',
+        not_found:'لم يُعثر على شيء',
+        about_title:'ℹ️ من نحن', about_sub:'نقدم أطباقاً لذيذة منذ 2015',
+        our_story:'قصتنا',
+        story_p1:'افتُتح مطعم لذت عام 2015 كمطعم عائلي صغير.',
+        story_p2:'نمونا على مر السنين لكن قاعدتنا لم تتغير: منتجات طازجة، طعام محضَّر بحب.',
+        story_p3:'اليوم لدينا 90+ طبق و500+ عميل دائم.',
+        our_team:'👨‍🍳 فريقنا', team_sub:'يعملون من أجلك كل يوم',
+        role_chef:'رئيس الطهاة', role_soup:'خبير الشوربات',
+        role_pastry:'حلواني', role_delivery:'مندوب التوصيل',
+        our_values:'قيمنا', values_sub:'لماذا يختارنا 500+ عميل',
+        val1_title:'منتجات طازجة', val1_text:'نعمل بمنتجات طازجة يومياً',
+        val2_title:'بحب', val2_text:'نحضّر كل طبق بقلبنا',
+        val3_title:'السرعة', val3_text:'نضمن التوصيل خلال 30 دقيقة',
+        val4_title:'الجودة', val4_text:'أعلى معايير مراقبة الجودة',
+        contact_title:'📞 تواصل معنا', contact_sub:'هل لديك أسئلة؟ نحن دائماً مستعدون للمساعدة!',
+        address_val:'طشقند، حي تشيلانزار، شارع بونيودكور 12',
+        work_hours:'⏰ ساعات العمل', weekdays:'الاثنين – الجمعة',
+        saturday:'السبت', sunday:'الأحد',
+        send_msg:'✉️ إرسال رسالة', reply_time:'نرد خلال 24 ساعة',
+        your_name:'اسمك *', subject:'الموضوع',
+        subj_order:'📦 حول الطلب', subj_quality:'⭐ حول الجودة',
+        subj_delivery:'🚚 حول التوصيل', subj_other:'💬 أخرى',
+        your_msg:'رسالتك *', msg_ph:'اكتب رسالتك...',
+        send_btn:'📨 إرسال', address_label:'العنوان', phone_label:'الهاتف',
+        msg_sent:'✅ تم استلام رسالتك! سنرد قريباً.',
+    },
+    ko: {
+        nav_home:'🏠 홈', nav_menu:'🍔 메뉴',
+        nav_about:'ℹ️ 소개', nav_contact:'📞 연락처',
+        cart:'장바구니', total:'합계:', order_btn:'주문하기 →',
+        back:'뒤로', name_label:'이름 *', name_ph:'성명',
+        phone_label:'전화번호 *', address_label:'주소 *',
+        address_ph:'거리, 건물 번호', note_label:'메모',
+        note_ph:'추가 요청...', submit_btn:'✅ 주문하기',
+        delivery_fee:'배달비:', delivery_fee_note:'🚚 배달비: 5 000 UZS',
+        toast_added:'장바구니에 추가됨!', cart_empty:'장바구니가 비어있습니다',
+        toast_err:'이름, 전화번호, 주소를 입력하세요!',
+        toast_conn:'연결 오류. 다시 시도하세요.',
+        rights:'모든 권리 보호.', lang_label:'KO',
+        currency:' UZS',
+        hero_title:'한 곳에서 최고의 음식 🍽️', hero_title_span:'최고의',
+        hero_sub:'신선한 재료, 경험 많은 요리사, 빠른 배달. 집에서 주문하세요!',
+        see_menu:'🍔 메뉴 보기',
+        stat_clients:'행복한 고객', stat_delivery:'분 배달',
+        stat_dishes:'음식 종류', stat_rating:'평점',
+        categories:'카테고리', find_what_you_want:'원하는 것을 찾으세요',
+        dishes_count:'개 음식', popular:'⭐ 인기 메뉴',
+        popular_sub:'고객들이 가장 많이 주문합니다',
+        add_btn:'+ 추가', see_all_menu:'전체 메뉴 보기 →',
+        why_us:'왜 우리인가요?', why_us_sub:'최고를 제공합니다',
+        why1_title:'빠른 배달', why1_text:'30분 안에 문 앞까지 배달',
+        why2_title:'신선한 재료', why2_text:'신선하고 품질 좋은 재료만 사용',
+        why3_title:'숙련된 요리사', why3_text:'10년 경력의 전문 요리사',
+        why4_title:'합리적인 가격', why4_text:'품질을 포기하지 않는 저렴한 가격',
+        menu_title:'🍔 우리 메뉴', menu_sub:'개의 맛있는 음식이 기다립니다',
+        search_ph:'🔍 음식 검색...', all:'🍽️ 전체',
+        menu_empty:'메뉴가 비어있습니다. 관리자 패널에서 추가하세요!',
+        not_found:'검색 결과 없음',
+        about_title:'ℹ️ 소개', about_sub:'2015년부터 맛있는 음식을 제공합니다',
+        our_story:'우리의 이야기',
+        story_p1:'Lazzat Restaurant은 2015년 작은 가족 레스토랑으로 문을 열었습니다.',
+        story_p2:'세월이 흘러도 우리의 원칙은 변하지 않았습니다: 신선한 재료, 사랑으로 만든 음식.',
+        story_p3:'현재 90개 이상의 메뉴와 500명 이상의 단골 고객이 있습니다.',
+        our_team:'👨‍🍳 우리 팀', team_sub:'매일 여러분을 위해 일합니다',
+        role_chef:'수석 요리사', role_soup:'수프 전문가',
+        role_pastry:'제과사', role_delivery:'배달원',
+        our_values:'우리의 가치', values_sub:'왜 500명 이상이 우리를 선택하는가',
+        val1_title:'신선한 재료', val1_text:'매일 신선한 재료로 작업합니다',
+        val2_title:'사랑으로', val2_text:'모든 요리를 마음을 담아 만듭니다',
+        val3_title:'신속함', val3_text:'30분 배달 보장',
+        val4_title:'품질', val4_text:'최고 수준의 품질 관리',
+        contact_title:'📞 연락하기', contact_sub:'질문이 있으신가요? 항상 도와드릴 준비가 되어 있습니다!',
+        address_val:'타슈켄트, 칠란자르 지구, 부뇨드코르 거리 12',
+        work_hours:'⏰ 영업시간', weekdays:'월요일 – 금요일',
+        saturday:'토요일', sunday:'일요일',
+        send_msg:'✉️ 메시지 보내기', reply_time:'24시간 이내 답변',
+        your_name:'이름 *', subject:'주제',
+        subj_order:'📦 주문에 대해', subj_quality:'⭐ 품질에 대해',
+        subj_delivery:'🚚 배달에 대해', subj_other:'💬 기타',
+        your_msg:'메시지 *', msg_ph:'메시지를 작성하세요...',
+        send_btn:'📨 보내기', address_label:'주소', phone_label:'전화번호',
+        msg_sent:'✅ 메시지가 접수되었습니다! 곧 답변드리겠습니다.',
+    },
+    zh: {
+        nav_home:'🏠 首页', nav_menu:'🍔 菜单',
+        nav_about:'ℹ️ 关于我们', nav_contact:'📞 联系我们',
+        cart:'购物车', total:'合计:', order_btn:'下单 →',
+        back:'返回', name_label:'您的姓名 *', name_ph:'全名',
+        phone_label:'电话 *', address_label:'地址 *',
+        address_ph:'街道，门牌号', note_label:'备注',
+        note_ph:'额外要求...', submit_btn:'✅ 提交订单',
+        delivery_fee:'配送费:', delivery_fee_note:'🚚 配送费: 5 000 UZS',
+        toast_added:'已加入购物车!', cart_empty:'购物车为空',
+        toast_err:'请输入姓名、电话和地址！',
+        toast_conn:'连接错误，请重试。',
+        rights:'版权所有。', lang_label:'ZH',
+        currency:' UZS',
+        hero_title:'最美味的食物集于一处 🍽️', hero_title_span:'最美味',
+        hero_sub:'新鲜食材、经验丰富的厨师和快速配送。足不出户即可下单！',
+        see_menu:'🍔 查看菜单',
+        stat_clients:'满意顾客', stat_delivery:'分钟配送',
+        stat_dishes:'菜品种类', stat_rating:'评分',
+        categories:'分类', find_what_you_want:'找到您想要的',
+        dishes_count:'道菜', popular:'⭐ 热门菜品',
+        popular_sub:'顾客点单最多',
+        add_btn:'+ 添加', see_all_menu:'查看完整菜单 →',
+        why_us:'为什么选择我们？', why_us_sub:'我们为您提供最好的',
+        why1_title:'快速配送', why1_text:'30分钟内送达您家门口',
+        why2_title:'新鲜食材', why2_text:'只使用新鲜优质的食材',
+        why3_title:'专业厨师', why3_text:'拥有10年经验的专业厨师',
+        why4_title:'实惠价格', why4_text:'不牺牲质量的实惠价格',
+        menu_title:'🍔 我们的菜单', menu_sub:'道美食等待您',
+        search_ph:'🔍 搜索菜品...', all:'🍽️ 全部',
+        menu_empty:'菜单为空，请从管理面板添加菜品！',
+        not_found:'未找到结果',
+        about_title:'ℹ️ 关于我们', about_sub:'自2015年起提供美味佳肴',
+        our_story:'我们的故事',
+        story_p1:'Lazzat Restaurant于2015年作为一家小型家庭餐厅开业。',
+        story_p2:'多年来我们不断成长，但核心原则从未改变：新鲜食材，用爱烹制的美食。',
+        story_p3:'如今我们拥有90多道菜品和500多名回头客。',
+        our_team:'👨‍🍳 我们的团队', team_sub:'每天为您服务',
+        role_chef:'主厨', role_soup:'汤品专家',
+        role_pastry:'糕点师', role_delivery:'外卖员',
+        our_values:'我们的价值观', values_sub:'为什么500+顾客选择我们',
+        val1_title:'新鲜食材', val1_text:'每天使用新鲜食材',
+        val2_title:'用心制作', val2_text:'每道菜都用心烹制',
+        val3_title:'速度', val3_text:'保证30分钟内配送',
+        val4_title:'品质', val4_text:'最高品质管控',
+        contact_title:'📞 联系我们', contact_sub:'有问题吗？我们随时准备帮助您！',
+        address_val:'塔什干，奇兰扎尔区，布尼约德科尔街12号',
+        work_hours:'⏰ 营业时间', weekdays:'周一 – 周五',
+        saturday:'周六', sunday:'周日',
+        send_msg:'✉️ 发送消息', reply_time:'24小时内回复',
+        your_name:'您的姓名 *', subject:'主题',
+        subj_order:'📦 关于订单', subj_quality:'⭐ 关于质量',
+        subj_delivery:'🚚 关于配送', subj_other:'💬 其他',
+        your_msg:'您的留言 *', msg_ph:'写下您的留言...',
+        send_btn:'📨 发送', address_label:'地址', phone_label:'电话',
+        msg_sent:'✅ 您的留言已收到！我们将尽快回复。',
+    }
+};
+
+let currentLang = localStorage.getItem('lang') || 'uz';
+
+function t(key) {
+    return (LANGS[currentLang] && LANGS[currentLang][key]) || LANGS['uz'][key] || key;
+}
+
+function applyLang() {
+    // text nodes
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+    });
+    // placeholders
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+        el.placeholder = t(el.dataset.i18nPh);
+    });
+    // lang badge
+    document.getElementById('currentLang').textContent = t('lang_label');
+    // active
+    document.querySelectorAll('.lang-option').forEach(opt => {
+        opt.classList.toggle('active', opt.getAttribute('onclick').includes("'"+currentLang+"'"));
+    });
+    document.documentElement.lang = currentLang;
+    renderCart();
+    // Active lang data attributes (taom nomlari, kategoriyalar, tavsiflar)
+    document.querySelectorAll('[data-uz]').forEach(el => {
+        const val = el.getAttribute('data-' + currentLang)
+                 || el.getAttribute('data-en')
+                 || el.getAttribute('data-uz');
+        if (val !== null && val.trim() !== '') {
+            el.textContent = val;
+        }
+    });
+    // Arab tili uchun RTL
+    document.documentElement.dir = (currentLang === 'ar') ? 'rtl' : 'ltr';
+    // Kategoriya tablarini ham yangilash (agar alohida span bo'lmasa)
+    document.querySelectorAll('.cat-tab').forEach(btn => {
+        const span = btn.querySelector('[data-uz]');
+        if (span) {
+            const val = span.getAttribute('data-' + currentLang)
+                     || span.getAttribute('data-en')
+                     || span.getAttribute('data-uz');
+            if (val) span.textContent = val;
+        }
+    });
+    // page-specific hooks (e.g. contact select options)
+    if (window._postLangHook) window._postLangHook.forEach(fn => fn());
+}
+
+function setLang(lang) {
+    currentLang = lang;
+    localStorage.setItem('lang', lang);
+    applyLang();
+    closeLangMenu();
+}
+
+function toggleLang() {
+    document.getElementById('langMenu').classList.toggle('open');
+}
+function closeLangMenu() {
+    document.getElementById('langMenu').classList.remove('open');
+}
+document.addEventListener('click', e => {
+    if (!document.getElementById('langDropdown').contains(e.target)) closeLangMenu();
+});
+
+// ── DARK / LIGHT THEME ───────────────────────────────────────
+let currentTheme = localStorage.getItem('theme') || 'light';
+
+function applyTheme() {
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    document.getElementById('themeBtn').textContent = currentTheme === 'dark' ? '☀️' : '🌙';
+}
+
+function toggleTheme() {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', currentTheme);
+    applyTheme();
+}
+
+// ── CART ─────────────────────────────────────────────────────
+let cart = {};
+
+function addToCart(id, name, price) {
+    cart[id] = cart[id] || { name, price: parseFloat(price), qty: 0 };
+    cart[id].qty++;
+    renderCart();
+    showToast('✅ ' + name + ' ' + t('toast_added'));
+}
+
+function removeFromCart(id) {
+    if (!cart[id]) return;
+    cart[id].qty--;
+    if (cart[id].qty <= 0) delete cart[id];
+    renderCart();
+}
+
+function renderCart() {
+    const entries = Object.entries(cart);
+    const count = entries.reduce((s,[,v]) => s + v.qty, 0);
+    const subtotal = entries.reduce((s,[,v]) => s + v.price * v.qty, 0);
+    const DELIVERY = 5000;
+    const total = subtotal + (entries.length > 0 ? DELIVERY : 0);
+
+    document.getElementById('cartCount').textContent = count;
+
+    const currency = currentLang === 'ru' ? ' сум' : currentLang === 'kz' ? ' теңге' : ' so\'m';
+    document.getElementById('cartTotal').textContent = total.toLocaleString() + currency;
+
+    // yetkazib berish qatorini ko'rsat/yashir
+    const deliveryRow = document.getElementById('deliveryRow');
+    if (deliveryRow) deliveryRow.style.display = entries.length > 0 ? 'flex' : 'none';
+
+    const btn = document.getElementById('btnCheckout');
+    if (btn) {
+        btn.disabled = entries.length === 0;
+        btn.textContent = t('order_btn');
+    }
+
+    const body = document.getElementById('cartBody');
+    if (!entries.length) {
+        body.innerHTML = `<div style="text-align:center;color:var(--text3);margin-top:70px;">
+            <div style="font-size:4em;">🛒</div>
+            <p style="margin-top:10px;">${t('cart_empty')}</p></div>`;
+        return;
+    }
+    body.innerHTML = entries.map(([id, v]) => `
+        <div style="display:flex;align-items:center;gap:10px;padding:13px 0;
+            border-bottom:1px solid var(--border);">
+            <span style="flex:1;font-weight:600;color:var(--text);">${v.name}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button onclick="removeFromCart(${id})"
+                    style="width:28px;height:28px;border-radius:50%;background:#ff6b35;
+                    color:white;border:none;font-size:1.1em;cursor:pointer;font-weight:900;">−</button>
+                <span style="min-width:18px;text-align:center;font-weight:700;color:var(--text);">${v.qty}</span>
+                <button onclick="addToCart(${id},'${v.name.replace(/'/g,"\\'")}',${v.price})"
+                    style="width:28px;height:28px;border-radius:50%;background:#ff6b35;
+                    color:white;border:none;font-size:1.1em;cursor:pointer;font-weight:900;">+</button>
+            </div>
+            <span style="color:#ff6b35;font-weight:700;min-width:85px;text-align:right;">
+                ${(v.price * v.qty).toLocaleString()}${currency}</span>
+        </div>`).join('');
+}
+
+function openCart()  {
+    document.getElementById('cartSidebar').style.right = '0';
+    document.getElementById('overlay').style.display = 'block';
+}
+function closeCart() {
+    document.getElementById('cartSidebar').style.right = '-460px';
+    document.getElementById('overlay').style.display = 'none';
+}
+function goCheckout() {
+    document.getElementById('cartStep1').style.display = 'none';
+    document.getElementById('cartStep2').style.display = 'block';
+}
+function backToCart() {
+    document.getElementById('cartStep1').style.display = 'block';
+    document.getElementById('cartStep2').style.display = 'none';
+}
+
+async function submitOrder() {
+    const name    = document.getElementById('fName').value.trim();
+    const phone   = document.getElementById('fPhone').value.trim();
+    const address = document.getElementById('fAddress').value.trim();
+    const note    = document.getElementById('fNote').value.trim();
+
+    if (!name || !phone || !address) { showToast('❌ ' + t('toast_err')); return; }
+
+    const items = Object.entries(cart).map(([id, v]) => ({ menu_item_id: +id, quantity: v.qty }));
+    try {
+        const res = await fetch('/api/order/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customer_name: name, customer_phone: phone, customer_address: address, note, items })
+        });
+        const data = await res.json();
+        if (data.status === 'ok') {
+            cart = {}; renderCart(); closeCart();
+            window.location.href = '/order/' + data.order_id + '/';
+        } else { showToast('❌ ' + data.message); }
+    } catch (e) { showToast('❌ ' + t('toast_conn')); }
+}
+
+function showToast(msg) {
+    const t2 = document.getElementById('toast');
+    t2.textContent = msg; t2.classList.add('show');
+    setTimeout(() => t2.classList.remove('show'), 3000);
+}
+
+function toggleMenu() {
+    document.getElementById('navLinks').classList.toggle('open');
+}
+function saveLangAndGo(url) {
+    localStorage.setItem('lang', currentLang);
+    window.location.href = url;
+}
+function toggleUserMenu() {
+    document.getElementById('userMenu')?.classList.toggle('open');
+}
+document.addEventListener('click', e => {
+    if (!document.getElementById('userDropdown')?.contains(e.target))
+        document.getElementById('userMenu')?.classList.remove('open');
+});
+
+// Active nav link
+(function() {
+    const path = window.location.pathname;
+    const map = { '/': 'navHome', '/menu/': 'navMenu', '/about/': 'navAbout', '/contact/': 'navContact' };
+    const el = document.getElementById(map[path]);
+    if (el) el.classList.add('active');
+})();
+
+// ── INIT ────────────────────────────────────────────────────
+// Saqlangan tilni localStorage dan olamiz, yo'q bo'lsa 'uz'
+currentLang = localStorage.getItem('lang') || 'uz';
+applyTheme();
+// DOM to'liq yuklanganidan keyin tilni qo'llash
+document.addEventListener('DOMContentLoaded', function() {
+    currentLang = localStorage.getItem('lang') || 'uz';
+    applyLang();
+});
+applyLang();
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>
